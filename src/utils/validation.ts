@@ -25,6 +25,7 @@ const VALID_FRAMEWORKS: readonly FrameworkId[] = [
  * - Only lowercase letters, numbers, and hyphens
  * - Must start with a letter
  * - Max 50 characters
+ * - No Windows reserved device names
  */
 export function validateProjectName(name: string): {
   valid: boolean;
@@ -46,10 +47,49 @@ export function validateProjectName(name: string): {
     };
   }
 
-  // Check for reserved names
-  const reserved = ['node_modules', 'package', 'dist', 'build', 'src', 'test'];
-  if (reserved.includes(name)) {
-    return { valid: false, error: `"${name}" is a reserved name` };
+  /**
+   * Windows reserved device names (MS-DOS legacy)
+   * Source: https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file
+   * These names cannot be used as folder names on Windows
+   */
+  const WINDOWS_RESERVED_NAMES = [
+    'con',
+    'prn',
+    'aux',
+    'nul',
+    'com1',
+    'com2',
+    'com3',
+    'com4',
+    'com5',
+    'com6',
+    'com7',
+    'com8',
+    'com9',
+    'lpt1',
+    'lpt2',
+    'lpt3',
+    'lpt4',
+    'lpt5',
+    'lpt6',
+    'lpt7',
+    'lpt8',
+    'lpt9',
+  ] as const;
+
+  // Check for Windows reserved device names (case-insensitive)
+  const lowerName = name.toLowerCase();
+  if (WINDOWS_RESERVED_NAMES.includes(lowerName as (typeof WINDOWS_RESERVED_NAMES)[number])) {
+    return {
+      valid: false,
+      error: `"${name}" is a Windows reserved device name and cannot be used as a project name`,
+    };
+  }
+
+  // Check for project-specific reserved names
+  const PROJECT_RESERVED = ['node_modules', 'package', 'dist', 'build', 'src', 'test'];
+  if (PROJECT_RESERVED.includes(name)) {
+    return { valid: false, error: `"${name}" is a reserved project name` };
   }
 
   return { valid: true };

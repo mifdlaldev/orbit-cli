@@ -22,7 +22,7 @@ interface ToolCheck {
   check: () => { ok: boolean; version?: string | undefined };
 }
 
-export async function runDoctor(): Promise<void> {
+export function runDoctor(): void {
   p.intro(colors.primary('System Check'));
 
   const s = p.spinner();

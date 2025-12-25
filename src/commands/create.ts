@@ -1,22 +1,27 @@
 /**
  * Create Command
- * Full interactive flow for project creation
+ * CLI entry point for project creation - delegates to flows
+ *
+ * ARCHITECTURE NOTE:
+ * This file is a thin wrapper that:
+ * 1. Handles CLI options parsing
+ * 2. Shows banner/intro
+ * 3. Delegates to flows/create-flow.ts for actual implementation
+ *
+ * Flow: index.ts → commands/create.ts → flows/create-flow.ts → usecases/create-project.ts
  */
 
 import * as p from '@clack/prompts';
-import { setTimeout } from 'node:timers/promises';
 import { showBanner } from '../ui/banner.js';
-import { registry } from '../frameworks/index.js';
 import { colors } from '../ui/colors.js';
 import { displayError } from '../ui/error-display.js';
+import { collectCreateInput, runCreateFlow } from '../flows/create-flow.js';
 import {
   ValidationError,
   EnvironmentError,
   InternalError,
-  VALIDATION,
   INTERNAL,
 } from '../core/errors/index.js';
-import type { PackageManager, StackPresetId } from '../frameworks/types.js';
 
 interface CreateOptions {
   template?: string | undefined;
@@ -25,12 +30,16 @@ interface CreateOptions {
   yes?: boolean | undefined;
 }
 
+/**
+ * Run the create command
+ * Entry point called from index.ts
+ */
 export async function runCreate(
-  projectName: string | undefined,
+  _projectName: string | undefined, // Reserved for future CLI --name flag integration
   options: CreateOptions,
 ): Promise<void> {
   try {
-    // Skip banner if non-interactive
+    // Show banner unless non-interactive mode
     if (!options.yes) {
       await showBanner();
     }
@@ -38,165 +47,31 @@ export async function runCreate(
     p.intro(colors.primary('Create a new project'));
 
     // ═══════════════════════════════════════════════════════════
-    // 1. PROMPT GROUP - Collect all inputs
+    // 1. COLLECT INPUT - Using flows/create-flow.ts
     // ═══════════════════════════════════════════════════════════
 
-    const project = await p.group(
-      {
-        // --- Project Name ---
-        name: () => {
-          if (projectName) return Promise.resolve(projectName);
-          return p.text({
-            message: 'What is your project name?',
-            placeholder: 'my-awesome-app',
-            validate: (value) => {
-              if (!value) return VALIDATION.V001.hint;
-              if (!/^[a-z0-9-]+$/.test(value)) {
-                return VALIDATION.V002.hint;
-              }
-              if (value.length > 50) return VALIDATION.V003.hint;
-              return undefined;
-            },
-          });
-        },
+    // If projectName provided via CLI, we still use collectCreateInput
+    // but it will handle defaults appropriately
+    const input = await collectCreateInput();
 
-        // --- Framework ---
-        framework: async () => {
-          if (options.template) {
-            // Validate template exists
-            const fw = await registry.get(options.template);
-            if (!fw) {
-              throw new ValidationError(
-                VALIDATION.V004.code,
-                VALIDATION.V004.title,
-                VALIDATION.V004.message(options.template),
-                VALIDATION.V004.hint,
-              );
-            }
-            return options.template;
-          }
-          const frameworks = await registry.getAll();
-          return p.select({
-            message: 'Which framework would you like to use?',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            options: frameworks.map((fw) => ({
-              value: fw.id,
-              label: fw.name,
-              hint: fw.description,
-            })) as any,
-          });
-        },
-
-        // --- Stack Preset ---
-        stack: async ({ results }) => {
-          if (options.stack) return options.stack as StackPresetId;
-          const fw = await registry.get(results.framework as string);
-          if (!fw) return 'standard' as StackPresetId;
-          return p.select({
-            message: 'Choose your stack preset:',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            options: fw.stacks.map((s) => ({
-              value: s.id,
-              label: s.name,
-              hint: s.description,
-            })) as any,
-          });
-        },
-
-        // --- Package Manager ---
-        packageManager: () => {
-          if (options.pm) return Promise.resolve(options.pm as PackageManager);
-          return p.select({
-            message: 'Which package manager?',
-            initialValue: 'npm',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            options: [
-              { value: 'npm', label: 'npm', hint: 'Default' },
-              { value: 'pnpm', label: 'pnpm', hint: 'Fast, efficient' },
-              { value: 'yarn', label: 'yarn', hint: 'Classic' },
-              { value: 'bun', label: 'bun', hint: 'Ultra fast' },
-            ] as any,
-          });
-        },
-
-        // --- Confirmation ---
-        confirm: ({ results }) => {
-          if (options.yes) return Promise.resolve(true);
-          return p.confirm({
-            message: `Create "${results.name}" with ${results.framework} (${results.stack}) using ${results.packageManager}?`,
-            initialValue: true,
-          });
-        },
-      },
-      {
-        onCancel: () => {
-          p.cancel('Operation cancelled.');
-          process.exit(0);
-        },
-      },
-    );
-
-    // ═══════════════════════════════════════════════════════════
-    // 2. VALIDATION - User declined
-    // ═══════════════════════════════════════════════════════════
-
-    if (!project.confirm) {
+    if (!input) {
+      // User cancelled during prompts
       p.cancel('Operation cancelled.');
       process.exit(0);
     }
 
     // ═══════════════════════════════════════════════════════════
-    // 3. EXECUTION - Run installation tasks
+    // 2. EXECUTE - Using flows/create-flow.ts
     // ═══════════════════════════════════════════════════════════
 
-    await p.tasks([
-      {
-        title: 'Creating project directory',
-        task: async () => {
-          // TODO: mkdir logic
-          await setTimeout(500); // Simulated delay
-          return 'Directory created';
-        },
-      },
-      {
-        title: `Installing ${project.framework}`,
-        task: async () => {
-          // TODO: Execute create command
-          await setTimeout(2000); // Simulated delay
-          return `${project.framework} installed`;
-        },
-      },
-      {
-        title: 'Installing additional dependencies',
-        task: async () => {
-          // TODO: Post-install deps
-          await setTimeout(1000);
-          return 'Dependencies installed';
-        },
-      },
-      {
-        title: 'Initializing git',
-        task: async () => {
-          // TODO: git init
-          await setTimeout(300);
-          return 'Git initialized';
-        },
-      },
-    ]);
+    const success = await runCreateFlow(input);
 
-    // ═══════════════════════════════════════════════════════════
-    // 4. SUCCESS - Show completion message
-    // ═══════════════════════════════════════════════════════════
+    if (!success) {
+      // Flow already displayed error messages
+      process.exit(1);
+    }
 
-    p.outro(`
-${colors.success('✓')} Project created successfully!
-
-${colors.dim('Next steps:')}
-  cd ${project.name}
-  ${project.packageManager} run dev
-
-${colors.dim('Happy coding!')} 🚀
-    `);
+    // Flow handles success message via displaySuccess and p.note
   } catch (error) {
     // ═══════════════════════════════════════════════════════════
     // ERROR HANDLING
