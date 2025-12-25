@@ -15,3 +15,20 @@ export function createSpinner(options: SpinnerOptions = {}): Ora {
     spinner: 'dots',
   });
 }
+
+// Convenience methods
+export const spinner = {
+  start: (text: string): Ora => createSpinner({ text }).start(),
+
+  async wrap<T>(text: string, fn: () => Promise<T>): Promise<T> {
+    const s = createSpinner({ text }).start();
+    try {
+      const result = await fn();
+      s.succeed();
+      return result;
+    } catch (error) {
+      s.fail();
+      throw error;
+    }
+  },
+};

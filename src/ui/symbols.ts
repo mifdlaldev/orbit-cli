@@ -9,6 +9,15 @@ export const symbols = {
   warning: '⚠',
   info: 'ℹ',
 
+  // Selection
+  selected: '◆',
+  unselected: '○',
+  pointer: '▸',
+
+  // Progress
+  active: '●',
+  pending: '○',
+
   // Arrows
   arrowRight: '→',
   arrowLeft: '←',
@@ -17,11 +26,28 @@ export const symbols = {
 
   // Bullets
   bullet: '•',
-  pointer: '❯',
 
-  // Other
-  star: '★',
-  heart: '♥',
+  // Emoji
+  rocket: '🚀',
+  package: '📦',
+  lightning: '⚡',
+  wrench: '🔧',
+  bulb: '💡',
   check: '✔',
   cross: '✖',
+  star: '★',
+  heart: '♥',
+
+  // Box drawing
+  topLeft: '┌',
+  topRight: '┐',
+  bottomLeft: '└',
+  bottomRight: '┘',
+  horizontal: '─',
+  vertical: '│',
+  teeRight: '├',
+  teeLeft: '┤',
+  teeDown: '┬',
+  teeUp: '┴',
+  crossBox: '┼',
 };
