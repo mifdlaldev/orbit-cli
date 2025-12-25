@@ -1,14 +1,45 @@
 /**
- * Core Module - Public Exports
- * Only export what UI layer needs
+ * Core Module Index
+ * Main entry point for core layer exports
  */
 
-// Types
-export type { Framework, FrameworkId, FrameworkVersion, StackPreset } from './domain/framework.js';
-export type { ProjectConfig, PackageManager, CreateCommandOptions } from './types.js';
+// Container
+export { createContainer, type Container } from './container.js';
+
+// Domain Types
+export type {
+  FrameworkId,
+  FrameworkCategory,
+  FrameworkVersion,
+  StackPreset,
+  Framework,
+  PackageManager,
+  ProjectOptions,
+  ProjectConfig,
+  ProjectResult,
+  ToolStatus,
+  EnvironmentStatus,
+  SystemInfo,
+} from './domain/index.js';
+
+// Use Cases
+export {
+  CheckEnvironmentUseCase,
+  CreateProjectUseCase,
+  type CreateProjectInput,
+  type ProgressReporter,
+} from './usecases/index.js';
 
 // Errors
-export { OrbitError, ValidationError, EnvironmentError } from './errors.js';
+export {
+  OrbitBaseError,
+  ValidationError,
+  EnvironmentError,
+  FilesystemError,
+  CommandError,
+  InternalError,
+  EXIT_CODES,
+} from './errors/index.js';
 
-// Container
-export { createContainer } from './container.js';
+// Error Messages
+export { VALIDATION, ENVIRONMENT, FILESYSTEM, COMMAND, INTERNAL } from './errors/messages.js';
