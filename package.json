@@ -1,7 +1,7 @@
 {
-  "name": "orbit-cli",
-  "version": "1.0.0",
-  "description": "Universal Project Generator CLI",
+  "name": "@mifdlaldev/orbit-cli",
+  "version": "0.1.0",
+  "description": "Universal project generator CLI for Next.js, Nuxt, Astro, SvelteKit, Vue, Remix and Laravel",
   "type": "module",
   "engines": {
     "node": ">=18.20.0"
@@ -14,9 +14,19 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mifdlaldev/orbit-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mifdlaldev/orbit-cli/issues"
+  },
+  "homepage": "https://github.com/mifdlaldev/orbit-cli#readme",
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "dev": "tsup --watch",
@@ -37,9 +47,12 @@
     "nextjs",
     "nuxt",
     "astro",
-    "sveltekit"
+    "sveltekit",
+    "vue",
+    "remix",
+    "laravel"
   ],
-  "author": "",
+  "author": "mifdlaldev",
   "license": "MIT",
   "dependencies": {
     "@clack/prompts": "^0.9.1",

@@ -1,0 +1,69 @@
+schema: spec-driven
+
+context: |
+  ORBIT CLI — a universal project-generator CLI. TypeScript, ESM only ("type": "module"),
+  Node >= 18.20.0 declared, bundled with tsup, tested with vitest, prompts via
+  @clack/prompts, CLI parsing via commander, output styling via
+  chalk/gradient-string/figlet/ora. Source lives in `src/` at the repository root.
+
+  READ `AGENTS.md` AT THE REPO ROOT BEFORE WRITING ANY ARTIFACT. It is the arbiter of
+  what is true in this repository. It holds the verified build/test/runtime facts (§3),
+  the verified-but-unfixed defects with stable IDs B-01..B-04, D-01..D-06, P-01..P-06
+  (§5), and the verification harness you must run before claiming anything works (§6).
+
+  Anti-hallucination rules that override any habit:
+  - `README.md` and this repository's own docs describe some behaviour that does not work
+    yet. Treat every document as a claim, not a fact.
+  - A statement in any Markdown file is never evidence. Evidence is reading the source
+    file, or running the command and reading its output.
+  - Never invent a flag, error code, npm script, file path, or function name. Error codes
+    come only from `src/core/errors/messages.ts`. Scripts come only from `package.json`.
+  - This package was extracted from `mifdlaldev/orbit-cli-old` via `git subtree split`.
+    That repository's planning documents (`Agent-0/`) contain provably false status claims
+    and are NOT part of this repository. Never cite them.
+
+  Current state in one line: `list` and `doctor` work end to end; `create` — the primary
+  feature — does not complete a single run (B-01 through B-04).
+
+rules:
+  spec:
+    - Every requirement body MUST open with a status tag on its own line, one of
+      "[VERIFIED]", "[BROKEN]", or "[UNTESTED]".
+    - VERIFIED requires the exact command that proved it, quoted in the requirement or in
+      one of its scenarios.
+    - BROKEN requires the defect ID from AGENTS.md section 5 (for example B-02) plus a
+      reproduction command. The requirement text stays the intended behaviour; a scenario
+      records the observed failure.
+    - UNTESTED means the code path exists on disk but was never executed. Never use an
+      UNTESTED requirement as proof of behaviour.
+    - Never write a requirement for behaviour that does not exist in the code yet. That
+      belongs in a change proposal under openspec/changes/.
+    - Never promote UNTESTED to VERIFIED, and never drop a BROKEN tag, without pasting the
+      run output that justifies it.
+  proposal:
+    - State which known defect IDs (B/D/P from AGENTS.md section 5) the change fixes, or
+      say explicitly that it fixes none.
+    - Do not restate a defect diagnosis from scratch; cite the ID.
+  design:
+    - Reference the real files and line numbers you read. No speculative module names.
+    - Note explicitly when a decision resolves one of the duplicate-source-of-truth
+      defects (D-01, D-02, D-03, D-05, D-06).
+  tasks:
+    - Every task that changes src/ MUST be followed by a verification task
+      naming the exact command from AGENTS.md section 6.
+    - A task touching the create path MUST include running the built binary under a PTY
+      with a timeout bound, not just typecheck and build.
+
+operations:
+  apply:
+    guidance:
+      - Run the gates in AGENTS.md section 6 and report each exit code. Never write
+        "should work".
+      - Report failures verbatim, including the full error text.
+      - If a gate could not be run, write "did not run" and why. Never imply it passed.
+      - The eslint baseline is 62 errors and 57 warnings. Report the delta, not pass/fail.
+  archive:
+    guidance:
+      - Before archiving, update AGENTS.md sections 3 and 5 so the defect list matches
+        reality. A fixed defect must be moved out of section 5 with the evidence that
+        closed it.

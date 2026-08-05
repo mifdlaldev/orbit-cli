@@ -31,3 +31,7 @@ coverage/
 .eslintcache
 .prettiercache
 *.tsbuildinfo
+
+# Agent / tooling scratch (generated, never source)
+.codegraph/
+.omo/

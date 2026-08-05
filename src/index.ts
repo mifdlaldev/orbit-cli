@@ -9,7 +9,7 @@
 import { program } from 'commander';
 
 // Package info
-const VERSION = '1.0.0';
+const VERSION = '0.1.0';
 const NAME = 'orbit';
 const DESCRIPTION = 'Universal Project Generator';
 

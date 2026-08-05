@@ -1,0 +1,57 @@
+name: Bug report
+description: Something does not behave as documented
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing: `orbit create` is known to be broken (defects B-01 through B-04 in
+        [AGENTS.md](../blob/main/AGENTS.md#5--known-defects--verified-unfixed)). No need to
+        report that it ignores flags, crashes without a TTY, or hangs during install.
+
+  - type: input
+    id: command
+    attributes:
+      label: Exact command you ran
+      placeholder: node dist/index.js list nextjs
+    validations:
+      required: true
+
+  - type: textarea
+    id: observed
+    attributes:
+      label: What happened
+      description: Paste the real output verbatim, including the exit code.
+      placeholder: |
+        <output>
+
+        exit code: 1
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead
+    validations:
+      required: true
+
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      description: Output of `node --version`, `npm --version`, and your OS.
+      placeholder: |
+        node: v22.x
+        npm: 10.x
+        os: Ubuntu 24.04
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: ORBIT version or commit
+      description: '`orbit --version`, or the commit SHA you built from.'
+    validations:
+      required: true

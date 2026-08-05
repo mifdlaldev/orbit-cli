@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Known defects
+    url: https://github.com/mifdlaldev/orbit-cli/blob/main/AGENTS.md#5--known-defects--verified-unfixed
+    about: Check here first — the create command has four known blocking defects.
+  - name: Specifications
+    url: https://github.com/mifdlaldev/orbit-cli/tree/main/openspec/specs
+    about: What each capability is supposed to do, with verified/broken/untested status per requirement.

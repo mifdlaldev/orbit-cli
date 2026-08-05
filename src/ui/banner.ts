@@ -21,6 +21,6 @@ export async function showBanner(): Promise<void> {
   console.log();
   console.log(nebula.multiline(banner));
   console.log();
-  console.log(`  🚀 ${text.dim('Universal Project Generator  v1.0.0')}`);
+  console.log(`  🚀 ${text.dim('Universal Project Generator  v0.1.0')}`);
   console.log();
 }

@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['20', '22']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: npm run test:run
+
+      # Smoke-test the built binary. `create` is deliberately NOT run here:
+      # it crashes in any non-TTY context (defect B-02, see AGENTS.md section 5).
+      - name: Smoke test built CLI
+        run: |
+          set -euo pipefail
+          node dist/index.js --version
+          node dist/index.js --help
+          node dist/index.js doctor
+          node dist/index.js list
+          node dist/index.js list nextjs
+          if node dist/index.js list bogus; then
+            echo "expected non-zero exit for an unknown framework id"
+            exit 1
+          fi
+
+      # Informational only. The lint baseline is 62 errors / 57 warnings
+      # (AGENTS.md section 3), so blocking on it would fail every run.
+      - name: Lint (informational)
+        continue-on-error: true
+        run: npm run lint
+
+      - name: Format check (informational)
+        continue-on-error: true
+        run: npm run format:check
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev

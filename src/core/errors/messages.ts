@@ -172,6 +172,6 @@ export const INTERNAL = {
     code: 'ORBIT-I001' as ErrorCode,
     title: 'Unexpected error',
     message: (detail: string) => detail || 'An unexpected error occurred.',
-    hint: 'Please report this issue at https://github.com/username/orbit-cli/issues',
+    hint: 'Please report this issue at https://github.com/mifdlaldev/orbit-cli/issues',
   },
 } as const;
