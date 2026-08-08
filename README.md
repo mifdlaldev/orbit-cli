@@ -30,8 +30,9 @@ framework paths still depend on tools this machine never exercised.
 
 The four former blocking defects — `B-01` through `B-04` — are fixed and documented with
 the runs that proved it in [AGENTS.md](./AGENTS.md#5--known-defects--verified-unfixed).
-Published on npm as `@mifdlaldev/orbit-cli` (the unscoped name `orbit-cli` belongs to an
-unrelated package).
+The package name is `@mifdlaldev/orbit-cli` (the unscoped name `orbit-cli` belongs to an
+unrelated package). Published to GitHub Packages and as a GitHub Release (v0.1.0); the
+public npmjs.com publish is pending.
 
 ---
 
