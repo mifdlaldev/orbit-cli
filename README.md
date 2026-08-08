@@ -38,10 +38,13 @@ public npmjs.com publish is pending.
 
 ## Try it
 
-From npm (pre-alpha — only the paths listed in the status table above are verified):
+From the GitHub Release (pre-alpha — only the paths listed in the status table above are
+verified). The package name is `@mifdlaldev/orbit-cli`; the public npmjs.com publish is
+pending, so install from the release tarball for now:
 
 ```bash
-npm install -g @mifdlaldev/orbit-cli
+curl -LO https://github.com/mifdlaldev/orbit-cli/releases/download/v0.1.0/mifdlaldev-orbit-cli-0.1.0.tgz
+npm install -g ./mifdlaldev-orbit-cli-0.1.0.tgz
 orbit doctor
 orbit list
 orbit create my-app -t nextjs -p npm -s minimal --yes
