@@ -2,13 +2,16 @@
 
 > Universal project generator CLI — Next.js, Nuxt, Astro, SvelteKit, Vue, Remix, Laravel
 
+[![website](https://img.shields.io/badge/website-mifdlaldev.github.io%2Forbit--cli-cyan.svg)](https://mifdlaldev.github.io/orbit-cli/)
 [![CI](https://github.com/mifdlaldev/orbit-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/mifdlaldev/orbit-cli/actions/workflows/ci.yml)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![node](https://img.shields.io/badge/node-%3E%3D18.20.0-brightgreen.svg)](./package.json)
 
 ORBIT wraps the official scaffolder of each framework behind one interactive CLI, so you
 pick a framework, a package manager and a stack preset instead of memorising seven
-different `create-*` commands.
+different `create-*` commands. The landing page at
+[mifdlaldev.github.io/orbit-cli](https://mifdlaldev.github.io/orbit-cli/) shows the CLI in
+action — including an honest status board of what is verified and what is not.
 
 ---
 
@@ -139,6 +142,7 @@ src/core/errors/      code-tagged error system (ORBIT-V/E/F/C/I)
 src/frameworks/       7 framework definitions + lazy registry
 src/ui/               banner, colors, gradients, prompts, error display
 src/utils/            validation, safe-path, executors
+web/                  landing page (Astro + Tailwind, deploys to GitHub Pages)
 ```
 
 Runtime path for `create`:
@@ -171,6 +175,19 @@ npm run test:run    # vitest, 42 tests
 npm run lint        # eslint, baseline 61 errors / 57 warnings
 npm run format      # prettier
 ```
+
+The landing page in `web/` is a separate package:
+
+```bash
+cd web
+npm ci
+npm run dev         # astro dev server
+npm run build       # catalog assertion + astro build -> web/dist
+npm run typecheck   # astro check
+```
+
+`web/dist` is deployed to GitHub Pages by `.github/workflows/pages.yml` on every push to
+`main`. The build fails if the page's framework list diverges from the CLI registry.
 
 Non-negotiable constraints, all currently upheld:
 
