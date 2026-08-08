@@ -13,11 +13,14 @@ const sveltekit: Framework = {
   requiredTools: ['node', 'npm'],
 
   installCommand: {
-    npm: 'npx sv create',
-    yarn: 'yarn create svelte',
-    pnpm: 'pnpm create svelte',
-    bun: 'bunx sv create',
-    flags: {},
+    npm: 'npx --yes sv create --template minimal --install npm',
+    yarn: 'yarn dlx sv create --template minimal --install yarn',
+    pnpm: 'pnpm dlx sv create --template minimal --install pnpm',
+    bun: 'bunx sv create --template minimal --install bun',
+    flags: {
+      typescript: '--types ts',
+      eslint: '--add eslint',
+    },
   },
 
   stacks: [

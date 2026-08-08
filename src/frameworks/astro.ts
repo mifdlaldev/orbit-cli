@@ -13,14 +13,11 @@ const astro: Framework = {
   requiredTools: ['node', 'npm'],
 
   installCommand: {
-    npm: 'npm create astro@latest',
-    yarn: 'yarn create astro',
-    pnpm: 'pnpm create astro@latest',
-    bun: 'bun create astro@latest',
-    flags: {
-      typescript: '--template with-typescript',
-      tailwind: '--add tailwind',
-    },
+    npm: 'npm create astro@latest -- --yes',
+    yarn: 'yarn create astro --yes',
+    pnpm: 'pnpm create astro@latest --yes',
+    bun: 'bun create astro@latest --yes',
+    flags: {},
   },
 
   stacks: [

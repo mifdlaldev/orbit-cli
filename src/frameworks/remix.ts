@@ -13,10 +13,10 @@ const remix: Framework = {
   requiredTools: ['node', 'npm'],
 
   installCommand: {
-    npm: 'npx create-remix@latest',
-    yarn: 'yarn create remix',
-    pnpm: 'pnpm create remix@latest',
-    bun: 'bunx create-remix@latest',
+    npm: 'npx --yes create-react-router@latest --yes',
+    yarn: 'yarn create react-router --yes',
+    pnpm: 'pnpm create react-router --yes',
+    bun: 'bunx create-react-router@latest --yes',
     flags: {},
   },
 

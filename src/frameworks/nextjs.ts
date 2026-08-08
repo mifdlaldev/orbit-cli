@@ -13,10 +13,10 @@ const nextjs: Framework = {
   requiredTools: ['node', 'npm'],
 
   installCommand: {
-    npm: 'npx create-next-app@latest',
-    yarn: 'yarn create next-app',
-    pnpm: 'pnpm create next-app',
-    bun: 'bunx create-next-app',
+    npm: 'npx --yes create-next-app@latest --yes',
+    yarn: 'yarn create next-app --yes',
+    pnpm: 'pnpm create next-app --yes',
+    bun: 'bunx create-next-app --yes',
     flags: {
       typescript: '--ts',
       eslint: '--eslint',

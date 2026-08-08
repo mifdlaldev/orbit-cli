@@ -13,10 +13,10 @@ const nuxt: Framework = {
   requiredTools: ['node', 'npm'],
 
   installCommand: {
-    npm: 'npx nuxi@latest init',
-    yarn: 'yarn dlx nuxi@latest init',
-    pnpm: 'pnpm dlx nuxi@latest init',
-    bun: 'bunx nuxi@latest init',
+    npm: 'npx --yes nuxi@latest init --template minimal --packageManager npm --no-gitInit',
+    yarn: 'yarn dlx nuxi@latest init --template minimal --packageManager yarn --no-gitInit',
+    pnpm: 'pnpm dlx nuxi@latest init --template minimal --packageManager pnpm --no-gitInit',
+    bun: 'bunx nuxi@latest init --template minimal --packageManager bun --no-gitInit',
     flags: {},
   },
 

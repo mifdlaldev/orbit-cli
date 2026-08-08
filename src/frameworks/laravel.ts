@@ -13,10 +13,10 @@ const laravel: Framework = {
   requiredTools: ['php', 'composer'],
 
   installCommand: {
-    npm: 'composer create-project laravel/laravel',
-    yarn: 'composer create-project laravel/laravel',
-    pnpm: 'composer create-project laravel/laravel',
-    bun: 'composer create-project laravel/laravel',
+    npm: 'composer create-project laravel/laravel --no-interaction --prefer-dist --no-progress',
+    yarn: 'composer create-project laravel/laravel --no-interaction --prefer-dist --no-progress',
+    pnpm: 'composer create-project laravel/laravel --no-interaction --prefer-dist --no-progress',
+    bun: 'composer create-project laravel/laravel --no-interaction --prefer-dist --no-progress',
     flags: {},
   },
 

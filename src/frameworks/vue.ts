@@ -13,11 +13,14 @@ const vue: Framework = {
   requiredTools: ['node', 'npm'],
 
   installCommand: {
-    npm: 'npm create vue@latest',
+    npm: 'npm create vue@latest --',
     yarn: 'yarn create vue',
     pnpm: 'pnpm create vue',
     bun: 'bun create vue@latest',
-    flags: {},
+    flags: {
+      typescript: '--ts',
+      eslint: '--eslint',
+    },
   },
 
   stacks: [
