@@ -8,21 +8,26 @@
 import { spawn } from 'node:child_process';
 import * as path from 'node:path';
 import type { FrameworkId, PackageManager } from '../domain/index.js';
-import { CommandError } from '../errors/classes.js';
+import { CommandError, ValidationError } from '../errors/classes.js';
+import { COMMAND, VALIDATION } from '../errors/messages.js';
+import { registry } from '../../frameworks/index.js';
 
 export interface InstallInput {
   name: string;
   framework: FrameworkId;
   version: string;
   packageManager: PackageManager;
+  options?: { typescript?: boolean; eslint?: boolean } | undefined;
 }
+
+const COMMAND_TIMEOUT_MS = 600_000;
 
 export class FrameworkInstaller {
   /**
    * Install framework project
    */
   async install(input: InstallInput): Promise<string> {
-    const { command, args } = this.getInstallCommand(input);
+    const { command, args } = await this.getInstallCommand(input);
 
     await this.executeCommand(command, args, process.cwd());
 
@@ -30,62 +35,44 @@ export class FrameworkInstaller {
   }
 
   /**
-   * Get install command for framework
+   * Build the install command from the framework registry
+   * Single source of truth: src/frameworks/*.ts
    */
-  private getInstallCommand(input: InstallInput): {
+  private async getInstallCommand(input: InstallInput): Promise<{
     command: string;
-    args: readonly string[];
-  } {
-    const { framework, name, packageManager } = input;
-
-    // Map framework to create command
-    const commands: Record<FrameworkId, { command: string; args: string[] }> = {
-      nextjs: {
-        command: 'npx',
-        args: ['create-next-app@latest', name, '--typescript', '--eslint'],
-      },
-      nuxt: {
-        command: 'npx',
-        args: ['nuxi@latest', 'init', name],
-      },
-      astro: {
-        command: 'npm',
-        args: ['create', 'astro@latest', name],
-      },
-      sveltekit: {
-        command: 'npm',
-        args: ['create', 'svelte@latest', name],
-      },
-      vue: {
-        command: 'npm',
-        args: ['create', 'vue@latest', name],
-      },
-      remix: {
-        command: 'npx',
-        args: ['create-remix@latest', name],
-      },
-      laravel: {
-        command: 'composer',
-        args: ['create-project', 'laravel/laravel', name],
-      },
-    };
-
-    const cmd = commands[framework];
-
-    // Override command based on package manager for npm-based frameworks
-    if (packageManager !== 'npm' && framework !== 'laravel') {
-      if (packageManager === 'pnpm') {
-        return { command: 'pnpm', args: ['create', ...cmd.args.slice(1)] };
-      }
-      if (packageManager === 'yarn') {
-        return { command: 'yarn', args: ['create', ...cmd.args.slice(1)] };
-      }
-      if (packageManager === 'bun') {
-        return { command: 'bunx', args: cmd.args };
-      }
+    args: string[];
+  }> {
+    const framework = await registry.get(input.framework);
+    if (!framework) {
+      throw new ValidationError(
+        VALIDATION.V004.code,
+        VALIDATION.V004.title,
+        VALIDATION.V004.message(input.framework),
+        VALIDATION.V004.hint,
+      );
     }
 
-    return cmd;
+    const template = framework.installCommand[input.packageManager];
+    const parts = template.trim().split(/\s+/);
+    const [command, ...baseArgs] = parts;
+    if (!command) {
+      throw new CommandError(
+        COMMAND.C002.code,
+        COMMAND.C002.title,
+        `Empty install command for ${input.framework} + ${input.packageManager}`,
+        'Check the framework definition in src/frameworks/.',
+      );
+    }
+    const args = [...baseArgs, input.name];
+
+    if (input.options?.typescript && framework.installCommand.flags.typescript) {
+      args.push(...framework.installCommand.flags.typescript.split(/\s+/));
+    }
+    if (input.options?.eslint && framework.installCommand.flags.eslint) {
+      args.push(...framework.installCommand.flags.eslint.split(/\s+/));
+    }
+
+    return { command, args };
   }
 
   /**
@@ -101,30 +88,52 @@ export class FrameworkInstaller {
       });
 
       let stderr = '';
+      let settled = false;
+
+      const timeout = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        child.kill('SIGKILL');
+        reject(
+          new CommandError(
+            COMMAND.C003.code,
+            COMMAND.C003.title,
+            COMMAND.C003.message,
+            COMMAND.C003.hint,
+          ),
+        );
+      }, COMMAND_TIMEOUT_MS);
+
       child.stderr?.on('data', (data: Buffer) => {
         stderr += data.toString();
       });
 
       child.on('close', (code) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timeout);
         if (code === 0) {
           resolve();
         } else {
           reject(
             new CommandError(
-              'ORBIT-C002',
-              'Installation failed',
-              `Installation failed with code ${code}`,
-              stderr || 'Check the output above for details.',
+              COMMAND.C002.code,
+              COMMAND.C002.title,
+              COMMAND.C002.message(command, code ?? 1),
+              stderr || COMMAND.C002.hint,
             ),
           );
         }
       });
 
       child.on('error', (err) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timeout);
         reject(
           new CommandError(
-            'ORBIT-C002',
-            'Command failed',
+            COMMAND.C002.code,
+            COMMAND.C002.title,
             err.message,
             'Make sure the command is installed and accessible.',
           ),

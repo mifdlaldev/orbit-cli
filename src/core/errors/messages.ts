@@ -51,6 +51,14 @@ export const VALIDATION = {
     message: (pm: string) => `"${pm}" is not a valid package manager.`,
     hint: 'Available: npm, yarn, pnpm, bun',
   },
+
+  V007: {
+    code: 'ORBIT-V007' as ErrorCode,
+    title: 'Interactive input required',
+    message: (missing: string) =>
+      `Missing ${missing}. This command needs an interactive terminal or all options as flags.`,
+    hint: 'Usage: orbit create <name> -t <template> -p <pm> -s <stack>, or add --yes for defaults.',
+  },
 } as const;
 
 // ═══════════════════════════════════════════════════════════

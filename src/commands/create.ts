@@ -19,6 +19,8 @@ import { collectCreateInput, runCreateFlow } from '../flows/create-flow.js';
 import {
   ValidationError,
   EnvironmentError,
+  FilesystemError,
+  CommandError,
   InternalError,
   INTERNAL,
 } from '../core/errors/index.js';
@@ -35,7 +37,7 @@ interface CreateOptions {
  * Entry point called from index.ts
  */
 export async function runCreate(
-  _projectName: string | undefined, // Reserved for future CLI --name flag integration
+  projectName: string | undefined,
   options: CreateOptions,
 ): Promise<void> {
   try {
@@ -50,9 +52,9 @@ export async function runCreate(
     // 1. COLLECT INPUT - Using flows/create-flow.ts
     // ═══════════════════════════════════════════════════════════
 
-    // If projectName provided via CLI, we still use collectCreateInput
-    // but it will handle defaults appropriately
-    const input = await collectCreateInput();
+    // CLI flags are passed through; the flow prompts only for
+    // fields that were not supplied as flags.
+    const input = await collectCreateInput(projectName, options);
 
     if (!input) {
       // User cancelled during prompts
@@ -83,6 +85,16 @@ export async function runCreate(
     }
 
     if (error instanceof EnvironmentError) {
+      displayError(error.toJSON());
+      process.exit(error.exitCode);
+    }
+
+    if (error instanceof FilesystemError) {
+      displayError(error.toJSON());
+      process.exit(error.exitCode);
+    }
+
+    if (error instanceof CommandError) {
       displayError(error.toJSON());
       process.exit(error.exitCode);
     }

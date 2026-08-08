@@ -38,6 +38,10 @@ export interface ProgressReporter {
   onProgress?: ((step: string) => void) | undefined;
   onComplete?: ((message: string) => void) | undefined;
   onError?: ((error: Error) => void) | undefined;
+  /** Fired immediately before a child process (scaffolder / pm) spawns */
+  onChildSpawn?: (() => void) | undefined;
+  /** Fired after the child process exits (success or failure) */
+  onChildExit?: (() => void) | undefined;
 }
 
 export class CreateProjectUseCase {
@@ -87,15 +91,30 @@ export class CreateProjectUseCase {
         framework: input.framework,
         version: input.version,
         packageManager: input.packageManager,
+        options: {
+          ...(input.options.typescript !== undefined && { typescript: input.options.typescript }),
+          ...(input.options.eslint !== undefined && { eslint: input.options.eslint }),
+        },
       };
-      const projectPath = await this.installer.install(installInput);
+      reporter?.onChildSpawn?.();
+      let projectPath: string;
+      try {
+        projectPath = await this.installer.install(installInput);
+      } finally {
+        reporter?.onChildExit?.();
+      }
       reporter?.onProgress?.('Framework installed');
 
       // 4. Apply stack config (if not minimal)
       if (input.stack !== 'minimal') {
         reporter?.onProgress?.('Applying stack configuration...');
         const stackConfig = this.getStackConfig(input.stack);
-        await this.configApplier.apply(projectPath, stackConfig, input.packageManager);
+        reporter?.onChildSpawn?.();
+        try {
+          await this.configApplier.apply(projectPath, stackConfig, input.packageManager);
+        } finally {
+          reporter?.onChildExit?.();
+        }
         reporter?.onProgress?.('Stack configured');
       }
 
