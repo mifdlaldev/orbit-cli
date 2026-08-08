@@ -93,21 +93,31 @@ longer occurs.
 
 ### Requirement: Delegate scaffolding to the framework's official create tool
 
-[VERIFIED] for the npm + nextjs path; other package managers
-[UNTESTED] — see scenarios.
+[VERIFIED] for the npm package manager across four frameworks (nextjs, nuxt, astro,
+sveltekit); other package managers and the remaining frameworks [UNTESTED] — see
+scenarios.
 
 For the selected framework and package manager, the command SHALL invoke that framework's
 official scaffolder through the chosen package manager, with `shell: false`. The command
 strings SHALL come from `src/frameworks/*.ts` `installCommand[pm]` — the same source
 `list` displays (defect D-01 fixed).
 
-#### Scenario: npm — correct command, verified by execution
+#### Scenario: npm — correct command, verified by execution across four frameworks
 
 - **GIVEN** framework `nextjs` and package manager `npm`
 - **WHEN** the installer builds the command
 - **THEN** it spawns `npx --yes create-next-app@latest --yes <name> --ts --eslint`
 
-Observed 2026-08-08: a full non-TTY run of this command scaffolded `demo-app` (exit `0`).
+Observed 2026-08-08: full non-TTY runs of `create <name> --yes -t <fw> -p npm -s minimal`
+exited `0` and scaffolded a complete project for all four exercised frameworks:
+
+| framework | scaffolder | observed result |
+| :--- | :--- | :--- |
+| nextjs | `npx --yes create-next-app@latest --yes <name> --ts --eslint` | "Success! Created demo-app", 359 packages, exit 0 |
+| nuxt | `npx --yes nuxi@latest init --template minimal --packageManager npm --no-gitInit <name>` | "✨ Nuxt project has been created with the minimal template", exit 0 |
+| astro | `npm create astro@latest -- --yes <name>` | full scaffold (astro.config.mjs, node_modules), exit 0 |
+| sveltekit | `npx --yes sv create --template minimal --install npm <name> --types ts --add eslint` | "You're all set!", eslint.config.js present, exit 0 |
+
 `framework-installer.ts` reads `framework.installCommand[packageManager]`, splits the
 template, appends the name, then appends `flags.typescript` / `flags.eslint` when
 selected. It no longer rebuilds argv with `args.slice(1)`.

@@ -122,15 +122,15 @@ export const status: readonly StatusEntry[] = [
     verifiedOn: '2026-08-08',
   },
   {
-    label: 'create fixed, Next.js + npm path verified',
+    label: 'create fixed, four npm paths verified',
     detail:
-      'B-01..B-04 are fixed. A full scaffold (nextjs, npm, minimal stack) runs to completion with exit 0, headless and under a PTY.',
+      'B-01..B-04 are fixed. Full scaffolds (Next.js, Nuxt, Astro, SvelteKit, all with the npm package manager and minimal stack) run to completion with exit 0, headless and under a PTY.',
     verifiedOn: '2026-08-08',
   },
   {
     label: 'Other paths declared, not yet executed',
     detail:
-      'Nuxt, Astro, SvelteKit, Vue, Remix, Laravel, the pnpm/yarn/bun package managers, and the standard/full stacks are wired but have not run on the reference machine.',
+      'Vue, Remix, Laravel, the pnpm/yarn/bun package managers, and the standard/full stacks are wired but have not run on the reference machine.',
     verifiedOn: '2026-08-08',
   },
 ];

@@ -208,6 +208,9 @@ reproduce this — always verify asset URLs at the deploy target.
 | `list bogus` | "Framework "bogus" not found." + lists 7 valid ids | 1 |
 | `bogus-cmd` | commander unknown-command error | 1 |
 | `create my-app --yes -t nextjs -p npm -s minimal` (non-TTY) | Scaffolds `demo-app` via create-next-app: installs 359 packages, prints "✓ Project created at ..." + next-steps, exits 0. `create --yes` alone (missing pm/stack) exits 1 with "Interactive input required"; invalid flags exit 1 with the matching ORBIT-V code | 0 / 1 |
+| `create <name> --yes -t nuxt -p npm -s minimal` (non-TTY) | nuxi scaffolds "✨ Nuxt project has been created with the minimal template", then "✓ Project created at ...", exit 0 | 0 |
+| `create <name> --yes -t astro -p npm -s minimal` (non-TTY) | create-astro scaffolds a full project (astro.config.mjs, package.json, node_modules), "✓ Project created at ...", exit 0 | 0 |
+| `create <name> --yes -t sveltekit -p npm -s minimal` (non-TTY) | sv create scaffolds with eslint.config.js ("You're all set!"), "✓ Project created at ...", exit 0 | 0 |
 | `create my-app -t nextjs -p npm -s minimal` (real PTY) | Spinner runs "Preparing project..." → "Installing nextjs..." → "✔ Project created successfully!"; directory created; exit 0. Full scaffold ~5 min (npm install dominates) | 0 |
 
 ### Version string lives in two places
@@ -528,9 +531,11 @@ Hard constraints, regardless of task:
 
 - **Never commit, amend, or push** unless explicitly asked. Propose the message and wait.
 - **Never publish to npm** and never cut a GitHub Release without an explicit request.
-  B-01..B-04 are fixed (2026-08-08), but only the Next.js + npm path has run to
-  completion; the other six framework paths and the non-minimal stacks remain unexecuted.
-  Nothing ships until more than one framework path is verified.
+  As of 2026-08-08 four framework paths (npm package manager) are verified end to end —
+  Next.js, Nuxt, Astro, SvelteKit — and `create` with `-t nuxt|astro|sveltekit` exits 0.
+  Astro, Vue, Remix and Laravel plus the pnpm/yarn/bun managers and the non-minimal stacks
+  remain unexecuted on the reference machine. Publishing to npm / GitHub Packages /
+  Releases was explicitly requested and approved by the user (2026-08-08).
 - `node_modules/`, `dist/`, `.codegraph/`, `.omo/`, `coverage/` are generated. Never commit,
   never treat as source.
 - Do not add a dependency for something the existing tree already covers. Production deps:

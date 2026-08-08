@@ -26,18 +26,27 @@ framework paths still depend on tools this machine never exercised.
 | `orbit list` | Works. Lists all frameworks, or details for one. |
 | `orbit doctor` | Works. Probes 8 tools and reports what is installed. |
 | `orbit --help` / `--version` | Works. |
-| `orbit create` | **Works for Next.js + npm** (verified non-TTY and under a PTY). Flags, non-interactive mode and timeout all fixed. Other frameworks declared but not yet executed on the reference machine. |
+| `orbit create` | **Works for Next.js, Nuxt, Astro and SvelteKit with npm** (verified non-TTY and under a PTY, exit 0). Flags, non-interactive mode and timeout all fixed. Vue, Remix, Laravel and the pnpm/yarn/bun managers declared but not yet executed on the reference machine. |
 
 The four former blocking defects — `B-01` through `B-04` — are fixed and documented with
 the runs that proved it in [AGENTS.md](./AGENTS.md#5--known-defects--verified-unfixed).
-There is still no npm release or GitHub Release: nothing gets published until more than
-one framework path has run to completion.
+Published on npm as `@mifdlaldev/orbit-cli` (the unscoped name `orbit-cli` belongs to an
+unrelated package).
 
 ---
 
 ## Try it
 
-Not on npm yet. Build from source:
+From npm (pre-alpha — only the paths listed in the status table above are verified):
+
+```bash
+npm install -g @mifdlaldev/orbit-cli
+orbit doctor
+orbit list
+orbit create my-app -t nextjs -p npm -s minimal --yes
+```
+
+Or build from source:
 
 ```bash
 git clone https://github.com/mifdlaldev/orbit-cli.git
@@ -48,13 +57,6 @@ npm run build
 node dist/index.js doctor
 node dist/index.js list
 node dist/index.js list nextjs
-```
-
-Optionally link it so `orbit` is on your `PATH`:
-
-```bash
-npm link
-orbit doctor
 ```
 
 Do not run `create` inside a directory you care about — it scaffolds into
@@ -102,8 +104,9 @@ orbit create my-app                                     # prompts on a TTY
 ```
 
 With full flags (or `--yes` defaults) it runs headless — CI-safe. Missing values on a
-non-TTY exit with a clean error. Verified end to end with Next.js + npm; Laravel needs
-PHP/Composer, pnpm/yarn/bun paths are declared but not yet run on this machine.
+non-TTY exit with a clean error. Verified end to end with Next.js, Nuxt, Astro and
+SvelteKit (npm); Laravel needs PHP/Composer, Vue/Remix and the pnpm/yarn/bun paths are
+declared but not yet run on this machine.
 
 ---
 

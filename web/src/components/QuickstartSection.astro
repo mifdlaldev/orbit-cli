@@ -1,28 +1,28 @@
 ---
 import { site } from '../data/site';
 
-const cloneCommand = `${site.repoUrl}.git`;
+const npmCommand = `npm install -g @mifdlaldev/orbit-cli`;
 
 const steps: readonly { title: string; body: string; code: string }[] = [
   {
-    title: 'Clone the repository',
-    body: 'ORBIT CLI is not published to npm yet — install from source.',
-    code: `git clone ${cloneCommand}`,
+    title: 'Install from npm',
+    body: 'Pre-alpha — the verified paths are Next.js, Nuxt, Astro and SvelteKit with npm.',
+    code: npmCommand,
   },
   {
-    title: 'Install dependencies',
-    body: 'A single, reproducible install of the 222 production and dev packages.',
-    code: 'cd orbit-cli && npm ci',
-  },
-  {
-    title: 'Build the CLI',
-    body: 'Compiles the TypeScript sources into a single ESM bundle in dist/.',
-    code: 'npm run build',
-  },
-  {
-    title: 'Run a verified command',
+    title: 'Check your environment',
     body: 'doctor probes 8 tools and exits 0 on the reference machine.',
-    code: 'node dist/index.js doctor',
+    code: 'orbit doctor',
+  },
+  {
+    title: 'List the frameworks',
+    body: 'Shows all 7 frameworks, grouped by category — matching the CLI registry.',
+    code: 'orbit list',
+  },
+  {
+    title: 'Create a project',
+    body: 'Scaffolds with the framework\u2019s official create tool, fully non-interactive with flags.',
+    code: 'orbit create my-app -t nextjs -p npm -s minimal --yes',
   },
 ];
 ---
@@ -33,9 +33,11 @@ const steps: readonly { title: string; body: string; code: string }[] = [
       <p class="eyebrow">quickstart</p>
       <h2 class="text-h2 mt-3 font-bold text-text">Up and running in four steps</h2>
       <p class="mt-4 text-muted">
-        Install from source. Nothing is published to the npm registry yet, and
-        <span class="font-mono text-text"> npm install -g orbit-cli</span> would install an
-        unrelated package that owns that name — so the steps below are the only supported path.
+        Install from npm. Note the scoped name:{' '}
+        <span class="font-mono text-text"> npm install -g orbit-cli</span> (unscoped) would
+        install an unrelated package that owns that name —{' '}
+        <span class="font-mono text-text">@mifdlaldev/orbit-cli</span> is the one from this
+        repository.
       </p>
     </div>
 
@@ -59,13 +61,14 @@ const steps: readonly { title: string; body: string; code: string }[] = [
 
     <aside class="mt-12 max-w-[70ch] rounded-md border-l-2 border-accent bg-surface p-5">
       <p class="text-sm leading-relaxed text-muted">
-        <span class="font-semibold text-text">Still on the source-only path.</span> No package has
-        been published from this repository. Clone it, build it, and run it — the full honesty
-        breakdown of what works is in{' '}
+        <span class="font-semibold text-text">Pre-alpha, and honest about it.</span> The four
+        npm-verified framework paths run end to end; the rest are declared but unexecuted — the
+        full breakdown of what works is in{' '}
         <a class="text-accent underline decoration-accent/40 underline-offset-4 hover:text-text" href="#status">
           Status
         </a>
-        .
+        . Building from source (clone + <span class="font-mono text-text">npm ci</span> +
+        <span class="font-mono text-text">npm run build</span>) still works if you prefer.
       </p>
     </aside>
   </div>

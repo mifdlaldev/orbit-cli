@@ -42,16 +42,17 @@ visual-only: it does not execute the CLI.
 
 The page SHALL state the real product status with no unverified claims. Claims about the
 CLI SHALL come from verified sources: the commands `list` and `doctor` work; `create`
-works for the exercised Next.js + npm path; other frameworks, package managers, and stack
-presets are declared but not yet executed. The page SHALL NOT display fabricated
+works for the exercised paths — Next.js, Nuxt, Astro and SvelteKit with the npm package
+manager (verified end to end 2026-08-08); the remaining frameworks, package managers, and
+stack presets are declared but not yet executed. The page SHALL NOT display fabricated
 testimonials, fake download counts, or star counts.
 
 #### Scenario: Status section reflects verified facts
 
 - **WHEN** a reviewer reads the status section
-- **THEN** it says `list` and `doctor` are verified, `create` is fixed but only the
-  Next.js + npm path has been executed end to end, and other paths are declared but
-  unexecuted
+- **THEN** it says `list` and `doctor` are verified, `create` is fixed and the
+  Next.js/Nuxt/Astro/SvelteKit + npm paths have been executed end to end, and other paths
+  are declared but unexecuted
 - **AND** no number or quote that has not been observed appears anywhere on the page
 
 #### Scenario: Status can be kept in sync
