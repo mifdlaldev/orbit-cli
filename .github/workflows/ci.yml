@@ -67,3 +67,30 @@ jobs:
 
       - name: Audit production dependencies
         run: npm audit --omit=dev
+
+  web:
+    name: Web landing page
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        working-directory: web
+        run: npm ci
+
+      - name: Typecheck
+        working-directory: web
+        run: npm run typecheck
+
+      - name: Build (includes catalog assertion)
+        working-directory: web
+        run: npm run build
