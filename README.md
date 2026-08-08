@@ -46,6 +46,18 @@ orbit list
 orbit create my-app -t nextjs -p npm -s minimal --yes
 ```
 
+`orbit` is linked into npm's global bin directory by `npm install -g`, so it is on your
+PATH automatically — unless you use a Node version manager (nvm, fnm, volta) whose bin
+directory is only added to PATH when a shell starts. If `orbit` is not found right after
+installing, any one of these fixes it:
+
+```bash
+rehash                        # zsh: refresh the command hash in the current shell
+# or: open a new terminal window
+# or, without a global install at all:
+npx @mifdlaldev/orbit-cli --version
+```
+
 Or build from source:
 
 ```bash
