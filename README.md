@@ -30,21 +30,17 @@ framework paths still depend on tools this machine never exercised.
 
 The four former blocking defects — `B-01` through `B-04` — are fixed and documented with
 the runs that proved it in [AGENTS.md](./AGENTS.md#5--known-defects--verified-unfixed).
-The package name is `@mifdlaldev/orbit-cli` (the unscoped name `orbit-cli` belongs to an
-unrelated package). Published to GitHub Packages and as a GitHub Release (v0.1.0); the
-public npmjs.com publish is pending.
+Published on npm as `@mifdlaldev/orbit-cli` (the unscoped name `orbit-cli` belongs to an
+unrelated package), plus GitHub Packages and a GitHub Release.
 
 ---
 
 ## Try it
 
-From the GitHub Release (pre-alpha — only the paths listed in the status table above are
-verified). The package name is `@mifdlaldev/orbit-cli`; the public npmjs.com publish is
-pending, so install from the release tarball for now:
+From npm (pre-alpha — only the paths listed in the status table above are verified):
 
 ```bash
-curl -LO https://github.com/mifdlaldev/orbit-cli/releases/download/v0.1.0/mifdlaldev-orbit-cli-0.1.0.tgz
-npm install -g ./mifdlaldev-orbit-cli-0.1.0.tgz
+npm install -g @mifdlaldev/orbit-cli
 orbit doctor
 orbit list
 orbit create my-app -t nextjs -p npm -s minimal --yes

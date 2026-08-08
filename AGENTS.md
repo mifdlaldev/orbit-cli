@@ -224,9 +224,12 @@ the others creates a mismatch — `--version` reads `src/index.ts`, not `package
 `main` tracks `origin/main` on `github.com/mifdlaldev/orbit-cli`. Public. As of
 2026-08-08: GitHub Release **v0.1.0** live (with the npm tarball attached, verified
 downloadable), package published to **GitHub Packages** (via
-`.github/workflows/publish.yml`, GITHUB_TOKEN `packages: write`), and the **public npmjs
-publish pending** — it needs `npm adduser` (or an `NPM_TOKEN` secret on the repo). CI runs
-on push and PR (§7); `web/` deploys to GitHub Pages on push to `main`.
+`.github/workflows/publish.yml`, GITHUB_TOKEN `packages: write`), and published to
+**npmjs.com** as `@mifdlaldev/orbit-cli@0.1.0` — verified by installing from the registry
+with an auth token (`orbit --version` → 0.1.0, `orbit list` works). Note: the public
+(unauthenticated) metadata endpoint may 404 for a short window after first publish while
+npm's review/visibility layer catches up; the tarball and dist-tags are live immediately.
+CI runs on push and PR (§7); `web/` deploys to GitHub Pages on push to `main`.
 
 ---
 
