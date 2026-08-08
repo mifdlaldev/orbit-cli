@@ -1,15 +1,62 @@
 ---
-import '../styles/global.css';
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import FeaturesSection from '../components/FeaturesSection.astro';
+import FrameworkCard from '../components/FrameworkCard.astro';
+import StatusSection from '../components/StatusSection.astro';
+import QuickstartSection from '../components/QuickstartSection.astro';
+import { site, frameworks } from '../data/site';
+
+const nodejsFrameworks = frameworks.filter((f) => f.category === 'nodejs');
+const phpFrameworks = frameworks.filter((f) => f.category === 'php');
 ---
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ORBIT CLI</title>
-  </head>
-  <body class="bg-bg text-text font-sans">
-    <main class="min-h-screen flex items-center justify-center">
-      <h1 class="text-4xl font-bold">ORBIT CLI — scaffold in progress</h1>
-    </main>
-  </body>
-</html>
+
+<Base
+  title={`${site.name} — ${site.tagline}`}
+  description={`${site.tagline} Scaffold projects with seven frameworks from one command. list and doctor verified; create verified on the Next.js + npm path.`}
+>
+  <Hero />
+
+  <FeaturesSection />
+
+  <section id="frameworks" class="border-t border-border">
+    <div class="wrap py-20 md:py-28">
+      <div class="max-w-[65ch]">
+        <p class="eyebrow">catalog</p>
+        <h2 class="text-h2 mt-3 font-bold text-text">
+          {frameworks.length} frameworks, one command
+        </h2>
+        <p class="mt-4 text-muted">
+          The list is asserted against the CLI's framework registry at build time — this page can
+          never drift from <span class="font-mono text-text">orbit list</span>.
+        </p>
+      </div>
+
+      <div class="mt-12">
+        <h3 class="font-mono text-sm font-semibold uppercase tracking-wider text-muted">
+          Node.js Frameworks
+        </h3>
+        <div class="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {nodejsFrameworks.map((framework) => (
+            <FrameworkCard framework={framework} />
+          ))}
+        </div>
+      </div>
+
+      <div class="mt-12">
+        <h3 class="font-mono text-sm font-semibold uppercase tracking-wider text-muted">
+          PHP Frameworks
+        </h3>
+        <div class="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {phpFrameworks.map((framework) => (
+            <FrameworkCard framework={framework} />
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <StatusSection />
+
+  <QuickstartSection />
+</Base>

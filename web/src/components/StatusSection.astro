@@ -1,0 +1,39 @@
+---
+import { status } from '../data/site';
+
+// The badge word is derived from the approved label text: entries whose
+// label contains "verified" report a verified fact; the rest declare
+// intent that has not been executed yet. Detail text is rendered verbatim.
+const badgeFor = (label: string): { word: 'verified' | 'declared'; tone: 'badge-verified' | 'badge-partial' } =>
+  label.includes('verified')
+    ? { word: 'verified', tone: 'badge-verified' }
+    : { word: 'declared', tone: 'badge-partial' };
+---
+
+<section id="status" class="border-t border-border">
+  <div class="wrap py-20 md:py-28">
+    <div class="max-w-[65ch]">
+      <p class="eyebrow">honest status</p>
+      <h2 class="text-h2 mt-3 font-bold text-text">What is verified, and what is not</h2>
+      <p class="mt-4 text-muted">
+        ORBIT CLI ships a honest status board instead of marketing copy. Each entry records what
+        was actually run, and on which date.
+      </p>
+    </div>
+
+    <ul class="mt-12 flex flex-col divide-y divide-border border-y border-border">
+      {status.map((entry) => {
+        const { word, tone } = badgeFor(entry.label);
+        return (
+          <li class="flex flex-col gap-3 py-8 sm:flex-row sm:items-baseline sm:gap-8">
+            <span class:list={['badge', 'shrink-0', tone]}>{word} {entry.verifiedOn}</span>
+            <div class="max-w-[70ch]">
+              <h3 class="font-mono text-base font-semibold text-text">{entry.label}</h3>
+              <p class="mt-2 text-sm leading-relaxed text-muted">{entry.detail}</p>
+            </div>
+          </li>
+        );
+      })}
+    </ul>
+  </div>
+</section>

@@ -1,0 +1,80 @@
+---
+import { site, commands, frameworks } from '../data/site';
+import TerminalDemo from './TerminalDemo.astro';
+
+// Tagline is split on "." only for display: "Seven frameworks." gets the
+// accent highlight. The text itself is rendered verbatim from site.ts.
+const taglineParts = site.tagline.split('.').map((part) => part.trim()).filter(Boolean);
+
+const verifiedCommands = commands.filter((c) => c.state === 'verified').length;
+const partialCommands = commands.filter((c) => c.state === 'partial').length;
+---
+
+<section id="top" class="relative overflow-hidden">
+  <!-- Soft cyan glow behind the terminal — atmosphere only, no layout -->
+  <div
+    aria-hidden="true"
+    class="pointer-events-none absolute -top-24 right-[-10%] h-[34rem] w-[34rem] rounded-full blur-3xl"
+    style="background: radial-gradient(circle, color-mix(in oklab, var(--color-accent) 14%, transparent) 0%, transparent 65%)"
+  ></div>
+
+  <div class="wrap relative grid items-center gap-14 py-20 md:py-28 lg:grid-cols-[5fr_7fr] lg:gap-16">
+    <div class="max-w-[36rem]">
+      <p class="eyebrow mb-4">❯ universal project generator</p>
+      <h1 class="text-display font-bold text-text">
+        {taglineParts.map((part, i) => (
+          <span class:list={['block', i === 1 ? 'text-accent' : '']}>{part}.</span>
+        ))}
+      </h1>
+      <p class="mt-6 max-w-[65ch] text-lg leading-relaxed text-muted">
+        Scaffold a project with any of {frameworks.length} frameworks using each one's official
+        create tool.{' '}<span class="font-mono text-text">list</span>{' '}and{' '}
+        <span class="font-mono text-text">doctor</span>{' '}run end to end;{' '}
+        <span class="font-mono text-text">create</span>{' '}is verified on the Next.js + npm path.
+        Every claim on this page carries a verified-on date — see{' '}
+        <a class="text-accent underline decoration-accent/40 underline-offset-4 hover:text-text" href="#status">
+          Status
+        </a>
+        .
+      </p>
+
+      <div class="mt-8 flex flex-wrap items-center gap-4">
+        <a class="btn btn-primary" href="#quickstart">
+          Get started
+        </a>
+        <a
+          class="btn btn-ghost"
+          href={site.repoUrl}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="View the source on GitHub (opens in a new tab)"
+        >
+          View source on GitHub
+        </a>
+      </div>
+
+      <dl class="mt-10 flex flex-wrap gap-x-8 gap-y-4 border-t border-border pt-6 font-mono text-sm">
+        <div>
+          <dt class="text-muted">verified commands</dt>
+          <dd class="mt-1 text-text">{verifiedCommands}</dd>
+        </div>
+        <div>
+          <dt class="text-muted">partial</dt>
+          <dd class="mt-1 text-warning">{partialCommands}</dd>
+        </div>
+        <div>
+          <dt class="text-muted">frameworks</dt>
+          <dd class="mt-1 text-text">{frameworks.length}</dd>
+        </div>
+        <div>
+          <dt class="text-muted">license</dt>
+          <dd class="mt-1 text-text">{site.license}</dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="relative">
+      <TerminalDemo />
+    </div>
+  </div>
+</section>

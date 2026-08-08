@@ -11,7 +11,7 @@ import { registry } from '../../src/frameworks/index.js';
 import { frameworks } from '../src/data/site.js';
 
 const pageIds = frameworks.map((f) => f.id).sort();
-const registryIds = registry.getAvailableIds().slice().sort();
+const registryIds: string[] = registry.getAvailableIds().slice().sort();
 
 const missing = registryIds.filter((id) => !pageIds.includes(id));
 const extra = pageIds.filter((id) => !registryIds.includes(id));

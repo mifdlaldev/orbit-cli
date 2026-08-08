@@ -1,0 +1,27 @@
+---
+import type { FrameworkEntry } from '../data/site';
+
+interface Props {
+  framework: FrameworkEntry;
+}
+
+const { framework } = Astro.props;
+const externalLabel = `${framework.name} website (opens in a new tab)`;
+---
+
+<article class="card flex flex-col gap-3 p-6 transition-colors hover:border-accent/50">
+  <h3 class="font-mono text-h3 font-bold text-text">{framework.name}</h3>
+  <p class="text-sm leading-relaxed text-muted">{framework.tagline}</p>
+  <a
+    href={framework.website}
+    target="_blank"
+    rel="noreferrer"
+    aria-label={externalLabel}
+    class="mt-auto inline-flex items-center gap-1.5 font-mono text-sm text-accent no-underline hover:text-text"
+  >
+    website
+    <svg aria-hidden="true" class="h-3.5 w-3.5" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 12 12 4M7 4h5v5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </a>
+</article>

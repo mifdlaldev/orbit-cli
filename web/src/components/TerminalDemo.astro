@@ -1,0 +1,108 @@
+---
+/**
+ * Simulated terminal: a faithful, shortened rendering of a real
+ * `orbit create my-app --template nextjs --packageManager npm --stack minimal`
+ * run (verified 2026-08-08, see site.ts `status`). The final line states
+ * "Project created" — exactly what the real run printed.
+ *
+ * Honesty: the window is labelled "simulated output" in the title bar.
+ *
+ * Motion: lines are typed one by one via JS; reveal + cursor blink are
+ * opacity-only. The default (no-JS, or `prefers-reduced-motion: reduce`)
+ * state renders every line statically, fully readable.
+ */
+
+interface Step {
+  kind: 'cmd' | 'meta' | 'dim' | 'success' | 'out' | 'blank';
+  text?: string;
+}
+
+const steps: readonly Step[] = [
+  { kind: 'cmd', text: 'orbit create my-app --template nextjs --packageManager npm --stack minimal' },
+  { kind: 'blank' },
+  { kind: 'meta', text: 'framework        Next.js' },
+  { kind: 'meta', text: 'package manager  npm' },
+  { kind: 'meta', text: 'stack            minimal' },
+  { kind: 'blank' },
+  { kind: 'dim', text: 'Preparing project...' },
+  { kind: 'success', text: '✓ Project created in ./my-app' },
+  { kind: 'success', text: '✓ Git initialized' },
+  { kind: 'blank' },
+  { kind: 'dim', text: 'Next steps:' },
+  { kind: 'out', text: 'cd my-app' },
+  { kind: 'out', text: 'npm run dev' },
+];
+
+const classFor = (kind: Step['kind']): string => `term-line-${kind}`;
+---
+
+<figure class="term" data-term aria-label="Simulated terminal output of the orbit create command: scaffolding a Next.js project with npm and the minimal stack, ending with “Project created” and next steps. This is a simulation, not a live run.">
+  <!-- Title bar -->
+  <figcaption class="term-bar">
+    <span class="flex items-center gap-1.5" aria-hidden="true">
+      <span class="term-dot bg-[oklch(0.75_0.2_25)]"></span>
+      <span class="term-dot bg-[oklch(0.78_0.15_95)]"></span>
+      <span class="term-dot bg-[oklch(0.75_0.16_150)]"></span>
+    </span>
+    <span class="min-w-0 truncate font-mono text-xs text-muted">orbit create my-app</span>
+    <span class="ms-auto shrink-0 rounded-full border border-border px-2 py-0.5 font-mono text-[0.65rem] uppercase tracking-wide text-muted">
+      simulated output
+    </span>
+  </figcaption>
+
+  <!-- Output body: static by default; JS animates it -->
+  <div class="term-body" aria-hidden="true">
+    {steps.map((step) => (
+      <div class:list={['term-line', step.kind !== 'blank' && classFor(step.kind)]}>
+        {step.kind === 'cmd' && <span class="term-prefix">$ </span>}
+        <span class="term-text">{step.text}</span>
+        <span class="term-cursor"></span>
+      </div>
+    ))}
+  </div>
+</figure>
+
+<script>
+  (() => {
+    const root = document.querySelector<HTMLElement>('[data-term]');
+    if (!root) return;
+
+    // Reduced motion: leave the static final state as-is.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const lines = Array.from(root.querySelectorAll<HTMLElement>('.term-line'));
+    const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+
+    root.classList.add('term-animating');
+
+    void (async () => {
+      for (const line of lines) {
+        const textEl = line.querySelector<HTMLElement>('.term-text');
+        const cursorEl = line.querySelector<HTMLElement>('.term-cursor');
+        if (!textEl || !cursorEl) continue;
+
+        const full = textEl.textContent ?? '';
+        textEl.textContent = '';
+        line.classList.add('term-line-active');
+        cursorEl.classList.add('term-cursor-on');
+
+        await sleep(line.classList.contains('term-line-cmd') ? 350 : 90);
+
+        for (const char of full) {
+          textEl.textContent += char;
+          await sleep(16);
+        }
+
+        cursorEl.classList.remove('term-cursor-on');
+        line.classList.remove('term-line-active');
+      }
+
+      // Settle back to the static state: every line fully visible.
+      root.classList.remove('term-animating');
+
+      // Leave the caret blinking on the final line.
+      const last = lines.at(-1)?.querySelector<HTMLElement>('.term-cursor');
+      last?.classList.add('term-cursor-on');
+    })();
+  })();
+</script>

@@ -1,0 +1,39 @@
+---
+import { site } from '../data/site';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t border-border">
+  <div class="wrap flex flex-col gap-8 py-12 md:flex-row md:items-start md:justify-between">
+    <div class="max-w-[45ch]">
+      <p class="font-mono text-base font-bold text-text">{site.name}</p>
+      <p class="mt-2 text-sm text-muted">{site.tagline}</p>
+      <p class="mt-4 text-xs text-muted">
+        © {year} {site.name} · {site.license} licensed
+      </p>
+    </div>
+
+    <nav aria-label="Footer" class="flex flex-col gap-2 font-mono text-sm">
+      <a
+        href={site.repoUrl}
+        target="_blank"
+        rel="noreferrer"
+        class="text-muted no-underline hover:text-accent"
+      >
+        GitHub
+      </a>
+      <a
+        href={site.issuesUrl}
+        target="_blank"
+        rel="noreferrer"
+        class="text-muted no-underline hover:text-accent"
+      >
+        Issues
+      </a>
+      <a href="#top" class="text-muted no-underline hover:text-accent">
+        Back to top
+      </a>
+    </nav>
+  </div>
+</footer>

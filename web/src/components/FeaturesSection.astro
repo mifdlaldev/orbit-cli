@@ -1,0 +1,49 @@
+---
+import { commands } from '../data/site';
+---
+
+<section id="features" class="border-t border-border">
+  <div class="wrap py-20 md:py-28">
+    <div class="max-w-[65ch]">
+      <p class="eyebrow">commands</p>
+      <h2 class="text-h2 mt-3 font-bold text-text">Three commands, each with a verified state</h2>
+      <p class="mt-4 text-muted">
+        The state badge is the product's honest status: green means the command ran to completion
+        with exit 0 on the reference machine; amber means only the exercised path is verified.
+      </p>
+    </div>
+
+    <div class="mt-12 grid gap-6 md:grid-cols-3">
+      {commands.map((command) => (
+        <article class="card flex flex-col gap-5 p-6 transition-colors hover:border-accent/50">
+          <div class="flex items-center justify-between gap-3">
+            <h3 class="font-mono text-h3 font-bold text-text">orbit {command.name}</h3>
+            {command.state === 'verified' ? (
+              <span class="badge badge-verified">
+                <svg aria-hidden="true" class="h-3 w-3" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2 6.5 4.5 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                verified
+              </span>
+            ) : (
+              <span class="badge badge-partial">
+                <svg aria-hidden="true" class="h-3 w-3" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.5" />
+                  <path d="M6 3.5v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                  <circle cx="6" cy="9" r="0.5" fill="currentColor" />
+                </svg>
+                partial — see Status
+              </span>
+            )}
+          </div>
+
+          <p class="overflow-x-auto rounded-md border border-border bg-bg px-3 py-2 font-mono text-xs text-muted">
+            {command.flags}
+          </p>
+
+          <p class="text-sm leading-relaxed text-muted">{command.description}</p>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
