@@ -3,7 +3,7 @@
  * Orchestrates the project creation process, bridging UI and backend
  */
 
-import ora from 'ora';
+import { createSpinner } from '../ui/spinner.js';
 import * as p from '@clack/prompts';
 import { createContainer } from '../core/container.js';
 import type { CreateProjectInput, ProgressReporter } from '../core/usecases/create-project.js';
@@ -252,7 +252,7 @@ export async function collectCreateInput(
 export async function runCreateFlow(input: CreateProjectInput): Promise<boolean> {
   const container = createContainer();
   const interactive = hasTty();
-  const spinner = interactive ? ora('Preparing project...').start() : null;
+  const spinner = interactive ? createSpinner({ text: 'Preparing project...' }).start() : null;
 
   const reporter: ProgressReporter = {
     onStart: (msg) => {
