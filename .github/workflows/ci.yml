@@ -41,7 +41,9 @@ jobs:
         run: npm run test:run
 
       # Smoke-test the built binary. `create` is deliberately NOT run here:
-      # it crashes in any non-TTY context (defect B-02, see AGENTS.md section 5).
+      # a real scaffold needs a network npm install that takes minutes
+      # (verified headless and under a PTY on the reference machine,
+      # AGENTS.md section 3).
       - name: Smoke test built CLI
         run: |
           set -euo pipefail
