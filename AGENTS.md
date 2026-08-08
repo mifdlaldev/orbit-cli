@@ -85,8 +85,9 @@ failure mode this file exists to prevent.
 ```
 /                          git root, remote: github.com/mifdlaldev/orbit-cli
 ├── src/                   the package source — 60 .ts files, 3876 lines
+├── web/                   landing page — separate Astro + Tailwind package (see §3 "web/")
 ├── openspec/              intent layer: specs and change proposals
-├── .github/               CI workflow, dependabot, issue templates
+├── .github/               CI workflow, dependabot, issue templates, Pages deploy
 ├── AGENTS.md              this file
 ├── README.md              user-facing, honest about what does not work
 ├── package.json           @mifdlaldev/orbit-cli, bin: orbit
@@ -167,11 +168,33 @@ verified here is automatically true on Node 18.
 | `npm run typecheck` | exit 0, **0 errors** |
 | `npm run build` | exit 0, tsup ESM bundle, ~550 ms |
 | `npm run test:run` | **42 tests pass, 1 test file** (`utils/validation.test.ts` only) |
-| `npm run lint` | **62 errors, 57 warnings** — this is the baseline, report the delta |
+| `npm run lint` | **61 errors, 57 warnings** — this is the baseline, report the delta |
 | `npm audit` | 11 vulnerabilities (2 critical, 8 high, 1 moderate) — **all devDependencies**, vitest/vite/rollup/esbuild chain |
 | `npm audit --omit=dev` | **0 vulnerabilities** — production tree clean |
 
 Do not "fix" the audit findings unless asked; the fix is a vitest major upgrade.
+
+### `web/` — the landing page
+
+`web/` is a separate npm package (Astro 7 + Tailwind CSS v4) that deploys to GitHub Pages
+at https://mifdlaldev.github.io/orbit-cli/. It is NOT part of the npm package — only
+`src/` ships.
+
+| Fact | Value (verified 2026-08-08) |
+| :--- | :--- |
+| Build | `npm run build` in `web/` → exit 0, static output in `web/dist` |
+| Typecheck | `npm run typecheck` in `web/` → 0 errors (`astro check`) |
+| Catalog assertion | `web/scripts/assert-catalog.ts` runs before `astro build`; fails the build if the page's framework ids or nodejs/php split differ from `src/frameworks/` |
+| Live URL | https://mifdlaldev.github.io/orbit-cli/ → HTTP 200, dark theme + hero + terminal verified in a real browser |
+| Deploy | `.github/workflows/pages.yml` on push to `main` (build + upload-pages-artifact@v5 + deploy-pages@v5) |
+
+**GitHub Pages subpath gotcha (hit 2026-08-08):** Pages serves the repo at `/orbit-cli/`,
+so `astro.config.mjs` MUST set `base: '/orbit-cli/'`. Without it Astro emits root-absolute
+asset URLs (`/_astro/*.css`) that 404 on the host — the page loads but renders unstyled
+(default blue links, serif font). Symptom: HTML 200 but no CSS; check the `href` of the
+`<link rel="stylesheet">` in the deployed HTML and that the file returns 200 at
+`https://mifdlaldev.github.io/orbit-cli/_astro/...`. Local `astro preview` does NOT
+reproduce this — always verify asset URLs at the deploy target.
 
 ### Runtime behaviour — `node dist/index.js <args>` after `npm run build`
 
@@ -196,7 +219,8 @@ the others creates a mismatch — `--version` reads `src/index.ts`, not `package
 ### Repository state
 
 `main` tracks `origin/main` on `github.com/mifdlaldev/orbit-cli`. Public. No release, no
-npm publish — intentionally, until `create` works. CI runs on push and PR (§7).
+npm publish — intentionally, until more than one framework path is verified. CI runs on
+push and PR (§7); `web/` deploys to GitHub Pages on push to `main`.
 
 ---
 
@@ -332,7 +356,7 @@ npm ci                # first time only
 npm run typecheck     # must exit 0
 npm run build         # must exit 0, emits dist/
 npm run test:run      # 42 tests must still pass
-npm run lint          # note the delta vs the 62/57 baseline in §3
+npm run lint          # note the delta vs the 61/57 baseline in §3
 ```
 
 Then exercise the built CLI. Reading the source is not verification (R3).
@@ -345,6 +369,20 @@ node $ORB doctor        ; echo "exit=$?"
 node $ORB list          ; echo "exit=$?"
 node $ORB list nextjs   ; echo "exit=$?"
 node $ORB list bogus    ; echo "exit=$?"   # expect 1
+```
+
+Any change to `web/` additionally requires the page gates:
+
+```bash
+cd web && npm ci && npm run typecheck && npm run build   # build includes the catalog assertion
+```
+
+And any change that affects deployed assets MUST be re-checked at the deploy target, not
+just in local preview — the Pages subpath gotcha (§3 "web/") is invisible locally:
+
+```bash
+curl -s https://mifdlaldev.github.io/orbit-cli/ | grep -oE 'href="[^"]*\.css[^"]*"' | head -1
+# the href MUST start with /orbit-cli/, then fetch it and expect 200
 ```
 
 `create` scaffolds into `process.cwd()`, so run it from an empty scratch dir. A real run
@@ -370,7 +408,8 @@ Gates:
   typecheck  exit 0
   build      exit 0
   test       42/42 pass
-  lint       N errors, M warnings (baseline 62/57)
+  lint       N errors, M warnings (baseline 61/57)
+  web build  exit 0 (if web/ changed)
 Runtime:
   <exact command> → <observed output>, exit <code>
 Not verified:
@@ -384,12 +423,18 @@ Not verified:
 `.github/workflows/ci.yml` runs on push to `main` and on pull requests, across Node 20 and
 22: `npm ci`, `npm run typecheck`, `npm run build`, `npm run test:run`, then
 `npm run lint` and `npm audit --omit=dev` as non-blocking informational steps (lint has a
-62-error baseline, so blocking on it would fail every run).
+61-error baseline, so blocking on it would fail every run). A separate `web` job runs
+`npm ci && npm run typecheck && npm run build` in `web/` so a broken page build fails CI
+without blocking the CLI jobs.
+
+`.github/workflows/pages.yml` builds `web/` and deploys `web/dist` to GitHub Pages on every
+push to `main` (upload-pages-artifact@v5 + deploy-pages@v5, latest verified releases).
 
 `.github/dependabot.yml` checks npm weekly, grouped, 5 PRs max.
 
-CI green does **not** mean `create` works. CI never runs `create`, because B-02 makes it
-crash in a non-TTY environment. Do not read a green badge as a working product.
+CI green does **not** mean `create` works. CI never runs `create`, because a real scaffold
+needs a network npm install that takes minutes. Do not read a green badge as a working
+product — runtime verification is §6.
 
 ---
 
