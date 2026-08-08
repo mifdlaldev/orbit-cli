@@ -7,7 +7,7 @@
     "node": ">=18.20.0"
   },
   "bin": {
-    "orbit": "./dist/index.js"
+    "orbit": "dist/index.js"
   },
   "files": [
     "dist"
