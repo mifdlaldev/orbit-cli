@@ -16,9 +16,6 @@ export const orbitTheme = {
     text: '#FAFAFA',
     dim: '#A1A1AA',
     muted: '#71717A',
-    // Solar-system accent tokens
-    sun: '#FBBF24',
-    orbitRing: '#22D3EE',
   },
 
   // Spacing (in characters)
@@ -31,19 +28,8 @@ export const orbitTheme = {
 
   // UI Elements
   spinner: {
-    type: 'orbit' as const,
-    color: 'yellow' as const,
-    interval: 90,
-    frames: [
-      '●◌◌◌◌',
-      '◌●◌◌◌',
-      '◌◌●◌◌',
-      '◌◌◌●◌',
-      '◌◌◌◌●',
-      '◌◌◌●◌',
-      '◌◌●◌◌',
-      '◌●◌◌◌',
-    ] as const,
+    type: 'dots' as const,
+    color: 'magenta' as const,
   },
 
   // Box Drawing

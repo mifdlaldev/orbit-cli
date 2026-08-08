@@ -38,19 +38,6 @@ export const symbols = {
   star: '★',
   heart: '♥',
 
-  // Orbit / solar system
-  sun: '◉',
-  sunGlyph: '☉',
-  orbitRing: '◌',
-  orbitArcNE: '◜',
-  orbitArcNW: '◝',
-  orbitArcSW: '◞',
-  orbitArcSE: '◟',
-  quarterUpperRight: '◐',
-  quarterLowerRight: '◓',
-  quarterLowerLeft: '◑',
-  quarterUpperLeft: '◒',
-
   // Box drawing
   topLeft: '┌',
   topRight: '┐',

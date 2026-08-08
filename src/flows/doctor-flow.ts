@@ -3,7 +3,7 @@
  * Orchestrates the system check process, bridging UI and backend
  */
 
-import { createSpinner } from '../ui/spinner.js';
+import ora from 'ora';
 import * as p from '@clack/prompts';
 import chalk from 'chalk';
 import { createContainer } from '../core/container.js';
@@ -15,7 +15,7 @@ import { symbols } from '../ui/symbols.js';
  */
 export async function runDoctorFlow(framework?: FrameworkId | undefined): Promise<boolean> {
   const container = createContainer();
-  const spinner = createSpinner({ text: 'Checking system requirements...' }).start();
+  const spinner = ora('Checking system requirements...').start();
 
   try {
     // Use 'nextjs' as default for base requirements
@@ -64,7 +64,7 @@ export async function runDoctorFlow(framework?: FrameworkId | undefined): Promis
  */
 export async function checkTool(toolName: string): Promise<boolean> {
   const container = createContainer();
-  const spinner = createSpinner({ text: `Checking ${toolName}...` }).start();
+  const spinner = ora(`Checking ${toolName}...`).start();
 
   try {
     const result = await container.usecases.checkEnvironment.checkTool(toolName);
