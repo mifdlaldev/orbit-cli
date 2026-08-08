@@ -221,9 +221,12 @@ the others creates a mismatch — `--version` reads `src/index.ts`, not `package
 
 ### Repository state
 
-`main` tracks `origin/main` on `github.com/mifdlaldev/orbit-cli`. Public. No release, no
-npm publish — intentionally, until more than one framework path is verified. CI runs on
-push and PR (§7); `web/` deploys to GitHub Pages on push to `main`.
+`main` tracks `origin/main` on `github.com/mifdlaldev/orbit-cli`. Public. As of
+2026-08-08: GitHub Release **v0.1.0** live (with the npm tarball attached, verified
+downloadable), package published to **GitHub Packages** (via
+`.github/workflows/publish.yml`, GITHUB_TOKEN `packages: write`), and the **public npmjs
+publish pending** — it needs `npm adduser` (or an `NPM_TOKEN` secret on the repo). CI runs
+on push and PR (§7); `web/` deploys to GitHub Pages on push to `main`.
 
 ---
 
