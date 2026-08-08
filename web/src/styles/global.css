@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+/* Design tokens — OKLCH-first per the landing-page design (D3).
+   Accent hue chosen at implementation time with the frontend-design skill. */
+@theme {
+  --color-bg: oklch(0.13 0.02 260);
+  --color-surface: oklch(0.17 0.02 260);
+  --color-text: oklch(0.92 0.01 260);
+  --color-muted: oklch(0.66 0.02 260);
+  --color-border: oklch(0.28 0.02 260);
+  --color-accent: oklch(0.75 0.15 195);
+  --color-success: oklch(0.75 0.16 150);
+}
