@@ -9,9 +9,10 @@ framework catalog and prints; it never touches the filesystem or the network.
 Implementation on disk: `src/commands/list.ts` over the registry in
 `src/frameworks/index.ts`.
 
-Important scope note: what `list` prints comes from `src/frameworks/*.ts`, and
-`create` does **not** use those definitions (AGENTS.md §5 D-01). `list` therefore
-describes a catalog that the create path does not implement.
+Important scope note: what `list` prints comes from `src/frameworks/*.ts`, and since
+2026-08-08 `create` consumes the same definitions (AGENTS.md §5 D-01 fixed —
+`framework-installer.ts` builds commands from `installCommand[pm]`). `list` and `create`
+now describe the same system.
 
 ## Requirements
 
@@ -33,8 +34,8 @@ display name and the one-line description. A group with no members SHALL be omit
   `Run 'orbit create <name> --template <framework>' to get started`
 - **AND** the process exits `0`
 
-Note: that outro advertises `--template`, which `create` accepts on the command line but
-never reads (AGENTS.md §5 B-01). The message is currently misleading.
+Note: the outro advertises `--template`, which `create` now honours (AGENTS.md §5 B-01
+fixed 2026-08-08). The message is accurate.
 
 ### Requirement: Show details for one framework
 
@@ -82,5 +83,6 @@ it collects no input.
 - **WHEN** the operator runs `orbit list`
 - **THEN** the command completes and exits `0`
 
-This is the contrast case for AGENTS.md §5 B-02: `create` crashes under exactly these
-conditions, `list` does not.
+This is the contrast case for AGENTS.md §5 B-02: `create` used to crash under exactly
+these conditions, `list` does not. Since 2026-08-08 `create` also completes headless when
+given full flags (B-02 fixed).

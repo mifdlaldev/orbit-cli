@@ -65,30 +65,34 @@ CLI. The current bound is 5000 ms (`check-tools.ts:29`).
 
 ### Requirement: The scaffolder invocation must be time-bounded
 
-[BROKEN] — defect B-04.
+[VERIFIED] — defect B-04 fixed 2026-08-08.
 
 The long-running install subprocess SHALL have a timeout, and SHALL NOT compete with the
 parent process for the terminal.
 
-#### Scenario: No timeout exists on the install path — observed
+#### Scenario: Timeout exists on the install path
 
-- **GIVEN** `framework-installer.ts:94-134` `executeCommand`
-- **WHEN** the child never exits
-- **THEN** the promise never settles; there is no timer, no `AbortSignal`, no
-  `options.timeout`
-- **AND** the observed result is a hang at `⠋ Preparing project...` past 100 s
+- **GIVEN** `framework-installer.ts` `executeCommand`
+- **WHEN** the child never exits within `COMMAND_TIMEOUT_MS` (600 000 ms)
+- **THEN** the child is killed with `SIGKILL` and a `CommandError` with code
+  `ORBIT-C003` is thrown
 
-#### Scenario: Child prompts on a TTY the parent is repainting — observed
+Observed 2026-08-08: the timeout was added as part of the B-04 fix. The timeout branch
+itself has not fired — full runs complete before it.
 
-- **GIVEN** `stdio: ['inherit','inherit','pipe']` at `framework-installer.ts:99`
-- **AND** an active `ora` spinner held at `create-flow.ts:125`
-- **WHEN** `create-next-app` writes its own prompt
-- **THEN** the child's prompt and the spinner contend for the same terminal and the run
-  never progresses
+#### Scenario: Child no longer prompts under a live spinner
 
-Contrast: `src/utils/safe-executor.ts:105-112` implements exactly the timeout this path
-needs — SIGTERM at the deadline, SIGKILL 5 s later. It is imported by nothing (P-02). A fix
-for B-04 should reuse it rather than write a third executor.
+- **GIVEN** every scaffolder is invoked with its official non-interactive flag
+  (e.g. `create-next-app --yes`)
+- **AND** the reporter stops the `ora` spinner while a child runs
+  (`onChildSpawn`/`onChildExit` in `create-flow.ts`)
+- **WHEN** `create` runs under a real PTY
+- **THEN** the run completes: spinner text advances
+  `Preparing project...` → `Installing nextjs...` → `✔ Project created successfully!`,
+  the project directory appears, exit `0`
+
+Observed 2026-08-08: full PTY run exited `0` and scaffolded the project. The old
+behaviour (stuck at `⠋ Preparing project...` past 100 s) no longer occurs.
 
 ### Requirement: Strip secrets from the child environment
 
@@ -128,21 +132,26 @@ choosing one and routing every spawn site through it.
 
 ### Requirement: Non-critical subprocess failures must not abort the run
 
-[UNTESTED] — the git path is unreachable while B-04 stands.
+[VERIFIED] — observed 2026-08-08.
 
 Git initialisation is a convenience, not a precondition. Its failure SHALL be reported and
 the flow SHALL continue.
 
-#### Scenario: git missing or failing
+#### Scenario: git commit finds nothing to commit
 
 - **GIVEN** `git-initializer.ts:29-49`
-- **WHEN** the child exits non-zero, or `spawn` emits `error`
+- **WHEN** the child exits non-zero (e.g. the scaffolder already committed, so `git
+  commit` has nothing to do), or `spawn` emits `error`
 - **THEN** the promise resolves, a warning is printed for the non-zero case, and creation
   is still reported as successful
 
+Observed 2026-08-08: both verified runs printed
+`Git command failed: git commit -m Initial commit from ORBIT CLI` and still exited `0`
+with `✔ Project created successfully!`.
+
 ### Requirement: Command failures surface as code-tagged errors
 
-[UNTESTED] — reachable only through the install path.
+[VERIFIED] for the ORBIT-C002 non-zero-exit path; timeout branch [UNTESTED].
 
 A failed subprocess SHALL be reported as a `CommandError` carrying an `ORBIT-C*` code, the
 captured stderr, and an actionable hint.
@@ -153,14 +162,17 @@ captured stderr, and an actionable hint.
 - **THEN** a `CommandError` with code `ORBIT-C002` is thrown, carrying the accumulated
   stderr, and the process exit code is `4` (`EXIT_CODES.COMMAND_ERROR`)
 
+Implemented in `framework-installer.ts` `executeCommand` (B-04 fix, 2026-08-08). The
+branch has not fired on the reference machine — the observed runs all exit `0`.
+
 #### Scenario: Scaffolder binary cannot be spawned
 
 - **WHEN** `spawn` emits `error`
 - **THEN** a `CommandError` with code `ORBIT-C002` is thrown with the hint
   `Make sure the command is installed and accessible.`
 
-Defined-but-unthrown codes: `ORBIT-C001` (command not allowed) and `ORBIT-C003` (command
-timeout). C003 is the code a B-04 fix should use.
+Defined codes: `ORBIT-C001` (command not allowed) and `ORBIT-C003` (command timeout,
+wired in the B-04 fix).
 
 ### Requirement: One executor, not four
 

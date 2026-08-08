@@ -189,9 +189,11 @@ but rejected by a shallower one means the deeper layer is not a safety net.
 - **THEN** it is accepted
 
 Consequence: any caller reaching the use case without going through the flow — a future
-non-interactive path fixing B-01, a programmatic API, a test — gets the weaker rule, and a
-leading `-` can reach a scaffolder's argv as a flag. The use-case check also omits the
-Windows reserved names and the build-name deny-list entirely.
+programmatic API, a test — gets the weaker rule, and a leading `-` can reach a
+scaffolder's argv as a flag. The use-case check also omits the Windows reserved names and
+the build-name deny-list entirely. The non-interactive CLI path (added with the B-01 fix,
+2026-08-08) still routes through `collectCreateInput`, which validates with the strong
+rule first, so the weak rule is not currently reachable from the CLI.
 
 #### Scenario: Error codes exist for the rules that are not enforced
 
@@ -200,5 +202,7 @@ Windows reserved names and the build-name deny-list entirely.
 - **WHEN** the use case validates input
 - **THEN** only `ORBIT-V001`, `ORBIT-V002` and `ORBIT-V003` are ever thrown
 
-V004–V006 are defined and unused. They are the codes a fix for B-01 will need when it
-starts validating flag values.
+V004–V006 are now thrown by the flag-validation path in `create-flow.ts`
+(`collectCreateInput`, added with B-01 fix, 2026-08-08): `-t bogus` → V004, `-s bogus` →
+V005, `-p cargo` → V006, each observed exiting `1` with the code-tagged message. The use
+case itself still only throws V001–V003.

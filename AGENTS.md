@@ -184,8 +184,8 @@ Do not "fix" the audit findings unless asked; the fix is a vitest major upgrade.
 | `list nextjs` | Name, description, website, 3 stack presets, required tools | 0 |
 | `list bogus` | "Framework "bogus" not found." + lists 7 valid ids | 1 |
 | `bogus-cmd` | commander unknown-command error | 1 |
-| `create my-app --yes -t nextjs -p npm -s minimal` (non-TTY) | **CRASH**: `TTY initialization failed: uv_tty_init returned EINVAL (invalid argument)`, no directory created | 99 |
-| `create` (real PTY, all prompts answered) | Reaches `⠋ Preparing project...` and **never completes**; no directory after >100 s | — |
+| `create my-app --yes -t nextjs -p npm -s minimal` (non-TTY) | Scaffolds `demo-app` via create-next-app: installs 359 packages, prints "✓ Project created at ..." + next-steps, exits 0. `create --yes` alone (missing pm/stack) exits 1 with "Interactive input required"; invalid flags exit 1 with the matching ORBIT-V code | 0 / 1 |
+| `create my-app -t nextjs -p npm -s minimal` (real PTY) | Spinner runs "Preparing project..." → "Installing nextjs..." → "✔ Project created successfully!"; directory created; exit 0. Full scaffold ~5 min (npm install dominates) | 0 |
 
 ### Version string lives in two places
 
@@ -208,8 +208,11 @@ Short version so you do not have to guess:
   Note it prints an outro advertising `--template`, a flag `create` never reads.
 - **`doctor`** — `spawnSync <tool> --version` with a 5000 ms timeout, 8 tools, parses
   `/v?(\d+\.\d+\.\d+)/`. Works. The missing-required-tool branch has never been executed.
-- **`create`** — collects five interactive prompts, then runs a 5-step use case: validate,
-  check environment, install framework, apply stack config, init git. Blocked at step 3.
+- **`create`** — accepts `[name]` positional + `-t/--template`, `-p/--pm`, `-s/--stack`,
+  `-y/--yes`. Non-interactive when all needed values come from flags or `--yes` defaults;
+  prompts only for missing fields on a TTY. Then runs a 5-step use case: validate, check
+  environment, install framework, apply stack config, init git. Verified end-to-end with
+  Next.js (see §3 runtime table).
 
 ---
 
@@ -218,49 +221,52 @@ Short version so you do not have to guess:
 Do not re-diagnose these. Do not claim any is fixed without re-running the reproduction.
 IDs are stable — reference them in commits, issues, and specs.
 
-### Blocking
+### Blocking — all four FIXED 2026-08-08
 
-**B-01 — `create` discards every CLI flag.**
-`src/commands/create.ts:38` names the first parameter `_projectName` with the comment
-"Reserved for future CLI --name flag integration", so the name is dropped;
-`options.template` / `options.pm` / `options.stack` are never read. Line 55 calls
-`collectCreateInput()` with no arguments, so the interactive prompts always run. `--yes`
-only skips the banner (line 43). There is no non-interactive path.
+**B-01 — FIXED. `create` now reads every CLI flag.**
+`src/commands/create.ts` passes the positional name and `options` into
+`collectCreateInput(name, options)` in `src/flows/create-flow.ts`, which builds the input
+from flags first and prompts only for missing fields on a TTY. `--yes` supplies defaults
+(template `nextjs`, pm `npm`, stack `minimal`, options all on).
+Verified: `node dist/index.js create demo-app2 --yes -t nextjs -p npm -s minimal
+< /dev/null` → exit 0, "✓ Project created at /tmp/orbit-qa/demo-app2". Flag `-t bogus`
+exits 1 with "Framework \"bogus\" is not supported." (ORBIT-V004).
 
-**B-02 — `create` crashes in any non-TTY context.**
-Reproduce: `node dist/index.js create my-app --yes < /dev/null`. Result:
-`TTY initialization failed: uv_tty_init returned EINVAL`, exit 99. Unusable in CI, pipes,
-or under a non-interactive agent.
+**B-02 — FIXED. No crash without a TTY.**
+`create-flow.ts` now checks `process.stdin.isTTY && process.stdout.isTTY` before calling
+any clack prompt. Non-TTY with full flags runs headless; non-TTY missing a required value
+throws the new `VALIDATION.V007` ("Interactive input required") instead of hitting clack's
+`uv_tty_init`. Verified: `create flagtest2 -t nextjs < /dev/null` → exit 1, clean error
+message, no stack trace, no exit 99.
 
-**B-03 — Package-manager command mapping is wrong for pnpm/yarn/bun.**
-`src/core/services/framework-installer.ts:76-86` rebuilds the argv as
-`['create', ...cmd.args.slice(1)]`, and `cmd.args[0]` is the create-package name itself:
+**B-03 — FIXED. Per-manager commands now come from `src/frameworks/*.ts`.**
+`framework-installer.ts` no longer rebuilds argv with `args.slice(1)`. It reads
+`framework.installCommand[packageManager]` from the registry, splits the template string,
+appends the project name, then appends `flags.typescript` / `flags.eslint` when selected.
+Verified: nextjs+npm runs `npx --yes create-next-app@latest --yes demo-app --ts --eslint`,
+which scaffolded successfully. The framework files were also corrected against each
+scaffolder's real CLI (verified by librarian, 2026-08-08): nuxt passes
+`--template minimal --packageManager <pm> --no-gitInit` (nuxi's non-TTY required args),
+astro/vue/sveltekit/remix/laravel carry their official non-interactive flags, and remix
+now uses `create-react-router@latest` (`create-remix@latest` prints a deprecation stub).
 
-| framework + pm | Command produced | Correct? |
-| :--- | :--- | :--- |
-| nextjs + npm | `npx create-next-app@latest my-app --typescript --eslint` | yes |
-| nextjs + pnpm | `pnpm create my-app --typescript --eslint` | no — lost `next-app` |
-| nuxt + pnpm | `pnpm create init my-app` | no — lost `nuxi@latest` |
-| astro + bun | `bunx create astro@latest my-app` | no — `bunx create` is not a command |
-
-Only the npm path is correct. The correct per-manager strings already exist unused in
-`src/frameworks/*.ts` `installCommand` — a fix should consume them (see D-01).
-
-**B-04 — Install hangs.**
-`framework-installer.ts:99` uses `stdio: ['inherit','inherit','pipe']` while
-`flows/create-flow.ts:125` holds a live `ora` spinner. The child scaffolder
-(`create-next-app`) prompts on the same TTY the spinner is repainting. Observed: stuck at
-`⠋ Preparing project...` past 100 s, project never created. There is also no timeout
-anywhere on this path — `utils/safe-executor.ts:105` implements one and is never called.
+**B-04 — FIXED. No hang during install.**
+Three changes: (1) `create-flow.ts` reporter gained `onChildSpawn`/`onChildExit` and stops
+the ora spinner while any child process runs, so the scaffolder's TTY output is not
+competing with spinner repaints; (2) every scaffolder is invoked with its official
+non-interactive flag, so it never waits on a hidden prompt; (3) `framework-installer.ts`
+`executeCommand` gained a 600 s timeout that kills the child and raises ORBIT-C003.
+Verified: full PTY run (`script -qfc`) scaffolded `ptytest`, spinner text advanced
+Preparing → Installing → "✔ Project created successfully!", exit 0.
 
 ### Design defects
 
-**D-01 — Two competing sources of truth for install commands.**
-Each `src/frameworks/*.ts` exports a full `installCommand` (per-manager strings plus flags)
-and `stacks`. `framework-installer.ts:42-71` ignores all of it and hardcodes its own table.
-So `src/frameworks/` is consumed only by `commands/list.ts`, and `list` describes a system
-`create` does not implement. Stack presets are duplicated a third time at
-`usecases/create-project.ts:174-207`.
+**D-01 — Mostly FIXED. `create` now consumes `src/frameworks/*.ts`.**
+`framework-installer.ts` builds every install command from `installCommand[pm]` in the
+registry — `list` and `create` finally describe the same system. Remaining duplication:
+stack presets still exist in both `src/frameworks/*.ts` `stacks` and
+`usecases/create-project.ts:174-207`; the usecase copy is the one actually applied. Not
+yet unified.
 
 **D-02 — Two divergent project-name rules, and the deeper layer is weaker.**
 `utils/validation.ts:42` requires `/^[a-z][a-z0-9-]*$/` plus Windows reserved names plus a
@@ -341,12 +347,16 @@ node $ORB list nextjs   ; echo "exit=$?"
 node $ORB list bogus    ; echo "exit=$?"   # expect 1
 ```
 
-`create` needs an interactive terminal. `tmux` is not installed here, so allocate a PTY
-with `script`, and always bound it with `timeout` because of B-04:
+`create` scaffolds into `process.cwd()`, so run it from an empty scratch dir. A real run
+installs dependencies and takes minutes; always bound it with `timeout` regardless.
+`tmux` is not installed here, so allocate a PTY with `script`:
 
 ```bash
-timeout 120 script -qfc "node $ORB create" /tmp/orbit-qa/out.log
-sed -e 's/\x1b\[[0-9;?]*[a-zA-Z]//g' -e 's/\r/\n/g' /tmp/orbit-qa/out.log
+cd /tmp && rm -rf orbit-qa && mkdir orbit-qa && cd orbit-qa
+timeout 500 script -qfc "node $ORB create demo-app --yes -t nextjs -p npm -s minimal" out.log
+# or exercise the non-TTY path headlessly:
+node $ORB create demo-app --yes -t nextjs -p npm -s minimal < /dev/null; echo "exit=$?"
+sed -e 's/\x1b\[[0-9;?]*[a-zA-Z]//g' -e 's/\r/\n/g' out.log
 ```
 
 Always clean up: `rm -rf /tmp/orbit-qa`, and delete any scaffolded project.
@@ -395,10 +405,10 @@ Six capabilities are specified. All six pass `openspec validate --all --strict`:
 | :--- | :--- |
 | `cli-doctor` | works — 3 verified requirements, 1 untested failure branch |
 | `cli-list` | works — 4 verified requirements |
-| `cli-create` | **does not work** — 4 broken (B-01..B-04), 5 untested, 1 verified sub-case |
-| `framework-catalog` | data correct but mostly unconsumed — 4 verified, 1 broken (D-06) |
+| `cli-create` | works for the exercised path — 8 verified, 0 broken, 8 untested (B-01..B-04 fixed 2026-08-08; untested = pnpm/yarn/bun/php paths + non-minimal stacks) |
+| `framework-catalog` | data now consumed by both list and create — 5 verified, 1 broken (D-06) |
 | `project-validation` | strongest area — 7 verified (42 tests), 1 broken (D-02) |
-| `command-execution` | 2 verified, 3 broken (B-04, D-03, D-04/D-05) |
+| `command-execution` | 5 verified, 2 broken (D-03, D-04/D-05) |
 
 `openspec/config.yaml` carries the project context and the artifact rules that enforce the
 status tags. Read it before writing any artifact.
@@ -473,7 +483,9 @@ Hard constraints, regardless of task:
 
 - **Never commit, amend, or push** unless explicitly asked. Propose the message and wait.
 - **Never publish to npm** and never cut a GitHub Release without an explicit request.
-  Nothing ships while B-01..B-04 stand.
+  B-01..B-04 are fixed (2026-08-08), but only the Next.js + npm path has run to
+  completion; the other six framework paths and the non-minimal stacks remain unexecuted.
+  Nothing ships until more than one framework path is verified.
 - `node_modules/`, `dist/`, `.codegraph/`, `.omo/`, `coverage/` are generated. Never commit,
   never treat as source.
 - Do not add a dependency for something the existing tree already covers. Production deps:

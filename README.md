@@ -14,20 +14,21 @@ different `create-*` commands.
 
 ## Status: pre-alpha — read this before installing
 
-This repository is honest about what runs today. Two commands work end to end; the
-headline command does not.
+This repository is honest about what runs today. `create` was broken until 2026-08-08;
+the four blocking defects are fixed and the Next.js path is verified end to end. Other
+framework paths still depend on tools this machine never exercised.
 
 | Command | State |
 | :--- | :--- |
 | `orbit list` | Works. Lists all frameworks, or details for one. |
 | `orbit doctor` | Works. Probes 8 tools and reports what is installed. |
 | `orbit --help` / `--version` | Works. |
-| `orbit create` | **Does not work.** Ignores every CLI flag, crashes without a TTY, and hangs during install. |
+| `orbit create` | **Works for Next.js + npm** (verified non-TTY and under a PTY). Flags, non-interactive mode and timeout all fixed. Other frameworks declared but not yet executed on the reference machine. |
 
-`create` is tracked as four blocking defects — `B-01` through `B-04` — in
-[AGENTS.md](./AGENTS.md#5--known-defects--verified-unfixed), with reproductions and root
-causes for each. There is no npm release and no GitHub Release yet, deliberately: nothing
-gets published until `create` completes a real run.
+The four former blocking defects — `B-01` through `B-04` — are fixed and documented with
+the runs that proved it in [AGENTS.md](./AGENTS.md#5--known-defects--verified-unfixed).
+There is still no npm release or GitHub Release: nothing gets published until more than
+one framework path has run to completion.
 
 ---
 
@@ -89,8 +90,17 @@ orbit list nextjs
 
 ### `orbit create [name]`
 
-Currently broken. The flags `-t, --template`, `-p, --pm`, `-s, --stack` and `-y, --yes`
-are declared and parsed but never read (`B-01`). See the status table above.
+Scaffolds a project by delegating to the framework's official create tool. Accepts the
+name positionally plus `-t, --template`, `-p, --pm`, `-s, --stack` and `-y, --yes`:
+
+```bash
+orbit create my-app -t nextjs -p npm -s minimal --yes   # fully non-interactive
+orbit create my-app                                     # prompts on a TTY
+```
+
+With full flags (or `--yes` defaults) it runs headless — CI-safe. Missing values on a
+non-TTY exit with a clean error. Verified end to end with Next.js + npm; Laravel needs
+PHP/Composer, pnpm/yarn/bun paths are declared but not yet run on this machine.
 
 ---
 
@@ -108,9 +118,10 @@ are declared and parsed but never read (`B-01`). See the status table above.
 
 Each declares three stack presets: `minimal`, `standard`, `full`.
 
-Caveat worth knowing: the catalog in `src/frameworks/` is currently read only by
-`orbit list`. The create path keeps its own separate command table, so `list` describes
-more than `create` implements. Tracked as `D-01`.
+Caveat worth knowing: since 2026-08-08 `create` consumes `installCommand` from the
+catalog, so `list` and `create` agree on commands. The stack presets `create` actually
+applies still come from a separate table in `usecases/create-project.ts`, not from the
+catalog's `stacks` lists (tracked as `D-01` residue).
 
 ---
 
@@ -157,7 +168,7 @@ npm ci
 npm run typecheck   # tsc --noEmit, currently 0 errors
 npm run build       # tsup, ESM bundle
 npm run test:run    # vitest, 42 tests
-npm run lint        # eslint, baseline 62 errors / 57 warnings
+npm run lint        # eslint, baseline 61 errors / 57 warnings
 npm run format      # prettier
 ```
 
@@ -188,10 +199,10 @@ carries a status tag so nobody mistakes a plan for a fact:
 | :--- | --: | --: | --: |
 | `cli-doctor` | 3 | 0 | 1 |
 | `cli-list` | 4 | 0 | 0 |
-| `cli-create` | 1 | 4 | 5 |
-| `framework-catalog` | 4 | 1 | 1 |
+| `cli-create` | 8 | 0 | 8 |
+| `framework-catalog` | 5 | 1 | 0 |
 | `project-validation` | 7 | 1 | 1 |
-| `command-execution` | 2 | 3 | 2 |
+| `command-execution` | 5 | 2 | 0 |
 
 ```bash
 npx -y @fission-ai/openspec@1.7.0 validate --all --strict

@@ -9,10 +9,11 @@ starting the CLI does not pay for seven module imports.
 Implementation on disk: `src/frameworks/` — `types.ts` plus one module per
 framework plus the `registry` singleton in `index.ts`.
 
-**Read this before using the catalog:** the catalog has exactly one consumer,
-`src/commands/list.ts`. The create path ignores it and hardcodes its own command
-table (AGENTS.md §5 D-01). Every `installCommand` and every `postInstallDeps` list in this
-catalog is therefore dead data today.
+**Read this before using the catalog:** since 2026-08-08 the catalog has two consumers —
+`src/commands/list.ts` and `src/core/services/framework-installer.ts` (AGENTS.md §5 D-01
+fixed). `installCommand` drives what `create` actually spawns. The `postInstallDeps` lists
+remain unused: the stack presets actually applied still live in
+`usecases/create-project.ts` (see the stack-preset divergence note below).
 
 ## Requirements
 
@@ -90,22 +91,24 @@ throwing.
 
 ### Requirement: Per-package-manager install commands
 
-[UNTESTED] — this data is never executed by any code path.
+[VERIFIED] for npm+nextjs (executed end-to-end); other package managers [UNTESTED].
 
 Each framework SHALL declare an `installCommand` giving the invocation string for `npm`,
 `yarn`, `pnpm` and `bun`, plus a `flags` map for `typescript`, `eslint`, `tailwind` and
-`srcDir`.
+`srcDir`. The create path SHALL consume these strings.
 
 #### Scenario: Next.js declares four package-manager variants
 
-- **THEN** `src/frameworks/nextjs.ts:15-26` declares
-  `npx create-next-app@latest`, `yarn create next-app`, `pnpm create next-app`,
-  `bunx create-next-app`
+- **THEN** `src/frameworks/nextjs.ts` declares
+  `npx --yes create-next-app@latest --yes`, `yarn create next-app --yes`,
+  `pnpm create next-app --yes`, `bunx create-next-app --yes`
 
-Status: these strings are correct as written, and they are exactly what B-03's broken
-runtime mapping fails to produce. A fix for B-03 should consume this field instead of the
-hardcoded table in `framework-installer.ts`. Until then, do not describe these strings as
-the commands ORBIT runs — they are not.
+Observed 2026-08-08: the npm variant ran end-to-end and scaffolded a project. The strings
+were cross-checked against each scaffolder's official CLI (librarian, 2026-08-08) when
+B-03 was fixed — e.g. nuxi now carries its non-TTY-required args
+(`--template minimal --packageManager <pm> --no-gitInit`), remix uses
+`create-react-router@latest` (create-remix is deprecated). yarn/pnpm/bun paths are
+declared but not executed on this machine (tools absent).
 
 ### Requirement: One canonical Framework type
 
