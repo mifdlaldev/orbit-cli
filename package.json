@@ -65,13 +65,13 @@
   },
   "devDependencies": {
     "@types/figlet": "^1.7.0",
-    "@types/node": "^22.19.3",
-    "@vitest/coverage-v8": "^4.0.16",
-    "eslint": "^9.39.2",
+    "@types/node": "^26.6.5",
+    "@vitest/coverage-v8": "^5.0.5",
+    "eslint": "^10.13.0",
     "prettier": "^3.7.4",
-    "tsup": "^8.5.1",
-    "typescript": "^5.9.3",
+    "tsup": "^9.0.0",
+    "typescript": "^7.0.2",
     "typescript-eslint": "^8.50.1",
-    "vitest": "^4.0.16"
+    "vitest": "^5.0.5"
   }
 }
